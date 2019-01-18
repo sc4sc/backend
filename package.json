@@ -1,0 +1,20 @@
+{
+  "name": "sc4sc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "caver-js": "0.0.2-f",
+    "express": "^4.16.4",
+    "openzeppelin-solidity": "^2.0.0",
+    "pg": "^7.8.0",
+    "sequelize": "^4.42.0",
+    "supervisor": "^0.12.0",
+    "truffle": "^5.0.1"
+  }
+}
