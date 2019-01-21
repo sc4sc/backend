@@ -1,30 +1,27 @@
 const models = require('../models');
+const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
-const Caver = require('caver-js');
-const caver = new Caver('http://127.0.0.1:8563');
-const incidents = require('../../build/contracts/Incidents.json');
-const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
-
-exports.report =  function(req, res) {
+exports.report =  async function(req, res) {
     var userId = req.body['userId'];
     var data = req.body['data'];
     var position = data['position'];
     var type = data['type'];
-    var content = JSON.stringify(data);
-    
-    incident.deploy({
-        data: incidents["bytecode"],
-        arguments: [content]})
-    .send({
-        from: userId,
-        gasPrice: 0, gas: 999999999999 })
-    .then((instance) => {
-        console.log("deploy contract address: "+instance._address);
-        
-        models.Incidents.create(
-            {type: type, contract: instance._address, userId: userId, lat: position['lat'], lng: position['lng']})
-        .then((result) => { res.json({"contract": instance._address}); })
-        .catch((error) => { console.log(error); });
+
+    caver.klay.unlockAccount(keystore['address'], password)
+    .then(() => {
+        incident.deploy({
+            data: incidents["bytecode"],
+            arguments: [JSON.stringify(req.body)]})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
+        .then((instance) => {  
+            caver.klay.lockAccount(keystore['address']);
+            models.Incidents.create(
+                {type: type, contract: instance._address, userId: userId, lat: position['lat'], lng: position['lng']})
+            .then((result) => { res.json({"contract": instance._address}); })
+            .catch(console.log);
+        });
     });
     
 };
@@ -34,7 +31,7 @@ exports.incidentList = function(req, res) {
         order: [['createdAt', 'desc']]
     })
     .then((result) => { res.json(result); })
-    .catch((error) => { console.log(error); });
+    .catch(console.log);
 };
 
 exports.readIncident = function(req, res) {
@@ -42,5 +39,5 @@ exports.readIncident = function(req, res) {
 
     models.Incidents.findByPk(incidentId)
     .then((result) => { res.json(result); })
-    .catch((error) => { console.log(error); });
+    .catch(console.log);
 };

@@ -3,6 +3,7 @@ const router = express.Router();
 const route_incident = require('./incidents');
 const route_comment = require('./comments');
 const route_progress = require('./progresses');
+const route_login = require('./login');
 
 //incident
 router.post('/incidents', route_incident.report);
@@ -20,7 +21,6 @@ router.post('/comments/:id/unlike', route_comment.unlike);
 //progress
 router.post('/incidents/:id/progresses', route_progress.writeProgress);
 router.get('/incidents/:id/progresses', route_progress.progressList);
-
 
 
 
