@@ -1,33 +1,29 @@
 const models = require('../models');
+const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
-const Caver = require('caver-js');
-const caver = new Caver('http://127.0.0.1:8563');
-const incidents = require('../../build/contracts/Incidents.json');
-const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
-
-
-exports.writeProgress = function(req, res) {
+exports.writeProgress =  async function(req, res) {
     var incidentId = req.params.id;
 
-    models.Incidents.findByPk(incidentId)
-    .then((result) => {
-        var incident = JSON.parse(JSON.stringify(result));
-        var contractAddr = incident['contract'];
-        var incident_contract = new caver.klay.Contract(incidents.abi, contractAddr);
+    var result = await models.Incidents.findByPk(incidentId);
+    var incident = JSON.parse(JSON.stringify(result));
+    var contractAddr = incident['contract'];
+    var incident_contract = new caver.klay.Contract(incidents.abi, contractAddr);
     
-        incident_contract.methods.addProgress(req.body['content'])
-        .send({from: req.body['userId']})
-        .catch((error) => { console.log(error); });
-
-    })
-    .catch((error) => { console.log(error); });
+    caver.klay.unlockAccount(keystore['address'], password)
+    .then(() => {
+        incident_contract.methods.addProgress(JSON.stringify(req.body))
+        .send({from: keystore['address']})
+        .then(()=>{ caver.klay.lockAccount(keystore['address']) })
+        .catch(console.log);
+    });
 
     models.Progresses.create({
-        content: req.body['content'], 
+        content: req.body['content'],
+        userId: req.body['userId'], 
         incidentId: incidentId
     })
     .then((result) => { res.json(result); })
-    .catch((error) => { console.log(error); });
+    .catch(console.log);
 };
 
 exports.progressList = function(req, res) {
@@ -39,7 +35,7 @@ exports.progressList = function(req, res) {
             where: {incidentId: incidentId}
         })
         .then((progresses) => { res.json(progresses); })
-        .catch((error) => { console.log(error); });
+        .catch(console.log);
         
     } else {
         var size = req.query.size;
@@ -52,6 +48,6 @@ exports.progressList = function(req, res) {
             limit: size
         })
         .then((progresses) => { res.json(progresses); })
-        .catch((error) => { console.log(error); });
+        .catch(console.log);
     }
 };
