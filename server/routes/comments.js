@@ -1,10 +1,11 @@
 const models = require('../models');
+const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
 exports.writeComment = async function(req, res) {
     var incidentId = req.params.id;
+    
     var result = await models.Incidents.findByPk(incidentId);
-
     var incident = JSON.parse(JSON.stringify(result));
     var contractAddr = incident['contract'];
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
@@ -30,34 +31,44 @@ exports.writeComment = async function(req, res) {
 exports.commentList = async function(req, res) {
     var incidentId = req.params.id;
     var userId = req.body['userId'];
+    var size = req.query.size;
+    var sortBy = req.query.sortBy;
+    var order = req.query.order;
+    var before = req.query.before;
+    var after = req.query.after;
+    var comments;
 
-    var comments = await models.Comments.findAll({
-        where: {incidentId: incidentId}
-    });
-
-    var commentList = JSON.parse(JSON.stringify(comments));
-    var commentIdList = [];
-    for(var i in commentList) {
-        commentList[i]['totalLike'] = 0;
-        commentList[i]['Like'] = false;
-        commentIdList[i] = commentList[i]['id'];
-    };
-
-    var likes = await models.Likes.findAll({
-        where: {commentId: commentIdList}
-    });
-    var likeList = JSON.parse(JSON.stringify(likes));
-
-    for(var i in likeList) {
-        var commentId = likeList[i]['commentId'];
-        var j = commentList.findIndex(function(item, i){
-            return item.id === commentId
+    if (before) {
+        comments = await models.Comments.findAll({
+            where: {
+                incidentId: incidentId,
+                updatedAt: {
+                    [Op.lt]: before 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size
         });
-        commentList[j]['totalLike']++;
-        commentList[j]['Like'] = (likeList[i]['userId']===userId) ? true:false;
+    } else if (after) {
+        comments = await models.Comments.findAll({
+            where: {
+                incidentId: incidentId,
+                updatedAt: {
+                    [Op.gt]: after 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size
+        });
+    } else {
+        comments = await models.Comments.findAll({
+            where: {incidentId: incidentId},
+            order: [[sortBy, order]],
+            limit: size
+        });
     }
-    res.json(commentList); 
-
+    var commentList = await getLikeInfo(comments);
+    res.json(commentList);
 };
 
 exports.writeReply = async function(req, res) {
@@ -86,7 +97,7 @@ exports.writeReply = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-}
+};
 
 exports.like = async function(req, res) {
     var commentId = req.params.id;
@@ -113,7 +124,7 @@ exports.like = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-}
+};
 
 exports.unlike = async function(req, res) {
     var commentId = req.params.id;
@@ -139,4 +150,32 @@ exports.unlike = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
     
+};
+
+async function getLikeInfo(comments) {
+    var commentList = JSON.parse(JSON.stringify(comments));
+    console.log(commentList);
+    var commentIdList = [];
+    for(var i in commentList) {
+        commentList[i]['totalLike'] = 0;
+        commentList[i]['Like'] = false;
+        commentIdList[i] = commentList[i]['id'];
+    };
+
+    var likes = await models.Likes.findAll({
+        where: {commentId: commentIdList}
+    });
+    var likeList = JSON.parse(JSON.stringify(likes));
+
+    for(var i in likeList) {
+        var commentId = likeList[i]['commentId'];
+        var j = commentList.findIndex(function(item, i){
+            return item.id === commentId
+        });
+        commentList[j]['totalLike']++;
+        commentList[j]['Like'] = (likeList[i]['userId']===userId) ? true:false;
+    }
+
+    return commentList;
 }
+

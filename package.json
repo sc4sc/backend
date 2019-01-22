@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "caver-js": "0.0.2-f",
+    "expo-server-sdk": "^3.1.0",
     "express": "^4.16.4",
     "openzeppelin-solidity": "^2.0.0",
     "pg": "^7.8.0",

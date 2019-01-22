@@ -1,4 +1,5 @@
 const models = require('../models');
+const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
 exports.writeProgress =  async function(req, res) {
@@ -29,19 +30,39 @@ exports.writeProgress =  async function(req, res) {
 exports.progressList = function(req, res) {
     var incidentId = req.params.id;
     var userId = req.body['userId'];
+    var size = req.query.size;
+    var sortBy = req.query.sortBy;
+    var order = req.query.order;
+    var before = req.query.before;
+    var after = req.query.after;
 
-    if (Object.keys(req.query).length === 0) {
+    if (before) {
         models.Progresses.findAll({
-            where: {incidentId: incidentId}
+            where: {
+                incidentId: incidentId,
+                updatedAt: {
+                    [Op.lt]: before 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size
         })
         .then((progresses) => { res.json(progresses); })
         .catch(console.log);
-        
+    } else if (after) {
+        models.Progresses.findAll({
+            where: {
+                incidentId: incidentId,
+                updatedAt: {
+                    [Op.gt]: after 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size
+        })
+        .then((progresses) => { res.json(progresses); })
+        .catch(console.log);
     } else {
-        var size = req.query.size;
-        var sortBy = req.query.sortBy;
-        var order = req.query.order;
-
         models.Progresses.findAll({
             where: {incidentId: incidentId},
             order: [[sortBy, order]],

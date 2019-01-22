@@ -1,4 +1,6 @@
 const models = require('../models');
+const expo = require('./push');
+const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
 exports.report =  async function(req, res) {
@@ -23,15 +25,69 @@ exports.report =  async function(req, res) {
             .catch(console.log);
         });
     });
-    
+
+    models.Login.findAll({
+        where: {
+            userId: {
+                [Op.ne]: userId 
+            }
+        },
+        attributes: ['expotoken']
+    })
+    .then((tokenlist) => { 
+        var expoTokenList = JSON.parse(JSON.stringify(tokenlist));
+        console.log("expoTokenList: "+expoTokenList);
+        var pushTokenList=[];
+        for(var i in expoTokenList){
+            pushTokenList[i] = expoTokenList[i]['expotoken'];
+        }
+        console.log("pueshTokenList: "+pushTokenList);
+        expo.push(type, pushTokenList);
+    })
+    .catch(console.log);
+
 };
 
 exports.incidentList = function(req, res) {
-    models.Incidents.findAll({
-        order: [['createdAt', 'desc']]
-    })
-    .then((result) => { res.json(result); })
-    .catch(console.log);
+    var size = req.query.size || 5;
+    var sortBy = req.query.sortBy || 'updatedAt';
+    var order = req.query.order || 'DESC';
+    var before = req.query.before;
+    var after = req.query.after;
+
+    if (before) {
+        models.Incidents.findAll({
+            where: {
+                updatedAt: {
+                    [Op.lt]: before 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size,
+        })
+        .then((result) => { res.json(result); })
+        .catch(console.log);
+    } else if (after) {
+        models.Incidents.findAll({
+            where: {
+                updatedAt: {
+                    [Op.gt]: after 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size,
+        })
+        .then((result) => { res.json(result); })
+        .catch(console.log);
+    } else {
+        models.Incidents.findAll({
+            order: [[sortBy, order]],
+            limit: size,
+        })
+        .then((result) => { res.json(result); })
+        .catch(console.log);
+    }
+    
 };
 
 exports.readIncident = function(req, res) {
