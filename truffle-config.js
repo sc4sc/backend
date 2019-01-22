@@ -38,9 +38,9 @@ module.exports = {
   networks: {
     klaytn: {
       host: '127.0.0.1',
-      port: 8563,
+      port: 8560,
       from: '0x281cf8d3ea50c4ec654fada79a4080ff4fa20858', // enter your publickey
-      network_id: '2018', // Aspen network id
+      network_id: '2018', 
       gas: 999999999999, // transaction gas limit
       gasPrice: 0, // gasPrice of Aspen is 25 Gpeb
     },
