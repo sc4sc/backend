@@ -22,6 +22,8 @@ router.post('/comments/:id/unlike', route_comment.unlike);
 router.post('/incidents/:id/progresses', route_progress.writeProgress);
 router.get('/incidents/:id/progresses', route_progress.progressList);
 
+//login
+router.post('/authenticate', route_login.login);
 
 
 
