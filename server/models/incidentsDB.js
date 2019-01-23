@@ -5,7 +5,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false},
       contract: {
         type: DataTypes.TEXT, 
-        allowNull: false, unique:true},
+        allowNull: true},
       userId: {
         type: DataTypes.TEXT, 
         allowNull: false},

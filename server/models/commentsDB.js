@@ -10,9 +10,15 @@ module.exports = function(sequelize, DataTypes) {
     incidentId: {
       type: DataTypes.INTEGER, 
       allowNull: false, references: models.Incidents, referencesKey: 'id'},
+    commentIndex: {
+      type: DataTypes.INTEGER,
+      allowNull: false},
     badge: {
       type: DataTypes.BOOLEAN, 
-      defaultValue: false}
+      defaultValue: false},
+    reply: {
+      type: DataTypes.TEXT,
+      allowNull: true} 
   }, {
     classMethods: {},
     tableName: 'Comments',

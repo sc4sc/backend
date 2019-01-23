@@ -5,9 +5,15 @@ const {caver, incidents, incident, keystore, password} = require('../models/cave
 
 exports.report =  async function(req, res) {
     var userId = req.body['userId'];
-    var data = req.body['data'];
-    var position = data['position'];
-    var type = data['type'];
+    var lat = req.body['lat'];
+    var lng = req.body['lng'];
+    var type = req.body['type'];
+
+    var newIncident = await models.Incidents.create(
+        {type: type, userId: userId, lat: lat, lng: lng});
+    console.log(newIncident['id']);
+    res.json(newIncident);
+    
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
@@ -19,11 +25,12 @@ exports.report =  async function(req, res) {
             gasPrice: 0, gas: 999999999999 })
         .then((instance) => {  
             caver.klay.lockAccount(keystore['address']);
-            models.Incidents.create(
-                {type: type, contract: instance._address, userId: userId, lat: position['lat'], lng: position['lng']})
-            .then((result) => { res.json({"contract": instance._address}); })
+            models.Incidents.update(
+                {contract: instance._address},
+                {where: {id: newIncident['id']}})
             .catch(console.log);
-        });
+        })
+        .catch(console.log);
     });
 
     models.Login.findAll({
@@ -36,7 +43,6 @@ exports.report =  async function(req, res) {
     })
     .then((tokenlist) => { 
         var expoTokenList = JSON.parse(JSON.stringify(tokenlist));
-        console.log("expoTokenList: "+expoTokenList);
         var pushTokenList=[];
         for(var i in expoTokenList){
             pushTokenList[i] = expoTokenList[i]['expotoken'];
