@@ -13,7 +13,9 @@ exports.writeProgress =  async function(req, res) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.addProgress(JSON.stringify(req.body))
-        .send({from: keystore['address']})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
         .then(()=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);
     });
@@ -30,9 +32,9 @@ exports.writeProgress =  async function(req, res) {
 exports.progressList = function(req, res) {
     var incidentId = req.params.id;
     var userId = req.body['userId'];
-    var size = req.query.size;
-    var sortBy = req.query.sortBy;
-    var order = req.query.order;
+    var size = req.query.size || 5;
+    var sortBy = req.query.sortBy || 'updatedAt';
+    var order = req.query.order || 'DESC';
     var before = req.query.before;
     var after = req.query.after;
 

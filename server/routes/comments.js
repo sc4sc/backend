@@ -13,16 +13,22 @@ exports.writeComment = async function(req, res) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incidentContract.methods.addComment(JSON.stringify(req.body))
-        .send({from: keystore['address']})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
         .then(()=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);
     })
     .catch(console.log);
 
+    var comments = await models.Comments.findAll({where: {incidentId: incidentId}});
+    var commentIndex = Object.keys(JSON.parse(JSON.stringify(comments))).length+1;
+
     models.Comments.create({
         content: req.body['content'], 
         userId: req.body['userId'], 
-        incidentId: incidentId
+        incidentId: incidentId,
+        commentIndex: commentIndex,
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
@@ -31,9 +37,9 @@ exports.writeComment = async function(req, res) {
 exports.commentList = async function(req, res) {
     var incidentId = req.params.id;
     var userId = req.body['userId'];
-    var size = req.query.size;
-    var sortBy = req.query.sortBy;
-    var order = req.query.order;
+    var size = req.query.size || 5;
+    var sortBy = req.query.sortBy || 'updatedAt';
+    var order = req.query.order || 'DESC';
     var before = req.query.before;
     var after = req.query.after;
     var comments;
@@ -84,7 +90,9 @@ exports.writeReply = async function(req, res) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.addReply(commentId, JSON.stringify(req.body))
-        .send({from: keystore['address']})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
         .then(()=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);
     })
@@ -111,7 +119,9 @@ exports.like = async function(req, res) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.like(commentId)
-        .send({from: keystore['address']})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999})
         .then(()=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);    
     })
@@ -138,7 +148,9 @@ exports.unlike = async function(req, res) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.unlike(commentId)
-        .send({from: keystore['address']})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
         .then(()=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);
     })
@@ -154,7 +166,6 @@ exports.unlike = async function(req, res) {
 
 async function getLikeInfo(comments) {
     var commentList = JSON.parse(JSON.stringify(comments));
-    console.log(commentList);
     var commentIdList = [];
     for(var i in commentList) {
         commentList[i]['totalLike'] = 0;
