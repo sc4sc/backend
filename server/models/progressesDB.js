@@ -6,10 +6,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false},
       userId: {
           type: DataTypes.TEXT, 
-          allowNull: false},
-      incidentId: {
-        type: DataTypes.INTEGER, 
-        allowNull: false, references: models.Incidents, referencesKey: 'id'}
+          allowNull: false}
     }, {
       classMethods: {},
       tableName: 'Progresses',

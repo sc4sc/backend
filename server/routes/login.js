@@ -11,4 +11,4 @@ exports.login = function(req, res) {
     .then((result) => { res.json(result); })
     .catch((error) => { console.log(error); });
 
-} 
+} ;

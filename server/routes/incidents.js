@@ -9,6 +9,8 @@ exports.report =  async function(req, res) {
     var lng = req.body['lng'];
     var type = req.body['type'];
 
+    console.log(userId);
+
     var newIncident = await models.Incidents.create(
         {type: type, userId: userId, lat: lat, lng: lng});
     console.log(newIncident['id']);

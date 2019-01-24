@@ -3,13 +3,13 @@ const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
 exports.writeComment = async function(req, res) {
-    var incidentId = req.params.id;
+    var incidentId = parseInt(req.params.id);
     
     var result = await models.Incidents.findByPk(incidentId);
     var incident = JSON.parse(JSON.stringify(result));
     var contractAddr = incident['contract'];
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-
+    
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incidentContract.methods.addComment(JSON.stringify(req.body))
@@ -21,13 +21,13 @@ exports.writeComment = async function(req, res) {
     })
     .catch(console.log);
 
-    var comments = await models.Comments.findAll({where: {incidentId: incidentId}});
-    var commentIndex = Object.keys(JSON.parse(JSON.stringify(comments))).length+1;
-
+    var comments = await models.Comments.findAll({where: {IncidentId: incidentId}});
+    var commentIndex = comments.length + 1;
+    
     models.Comments.create({
         content: req.body['content'], 
         userId: req.body['userId'], 
-        incidentId: incidentId,
+        IncidentId: incidentId,
         commentIndex: commentIndex,
     })
     .then((result) => { res.json(result); })
@@ -35,8 +35,8 @@ exports.writeComment = async function(req, res) {
 };
 
 exports.commentList = async function(req, res) {
-    var incidentId = req.params.id;
-    var userId = req.body['userId'];
+    var incidentId = parseInt(req.params.id);
+    var userId = req.query.userId;
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
@@ -47,7 +47,7 @@ exports.commentList = async function(req, res) {
     if (before) {
         comments = await models.Comments.findAll({
             where: {
-                incidentId: incidentId,
+                IncidentId: incidentId,
                 updatedAt: {
                     [Op.lt]: before 
                 }
@@ -58,7 +58,7 @@ exports.commentList = async function(req, res) {
     } else if (after) {
         comments = await models.Comments.findAll({
             where: {
-                incidentId: incidentId,
+                IncidentId: incidentId,
                 updatedAt: {
                     [Op.gt]: after 
                 }
@@ -68,12 +68,12 @@ exports.commentList = async function(req, res) {
         });
     } else {
         comments = await models.Comments.findAll({
-            where: {incidentId: incidentId},
+            where: {IncidentId: incidentId},
             order: [[sortBy, order]],
             limit: size
         });
     }
-    var commentList = await getLikeInfo(comments);
+    var commentList = await getLikeInfo(userId, comments);
     res.json(commentList);
 };
 
@@ -83,7 +83,7 @@ exports.writeReply = async function(req, res) {
     var content = req.body['content'];
 
     const comment = await models.Comments.findByPk(commentId);
-    const incident = await models.Incidents.findByPk(comment['incidentId']);
+    const incident = await models.Incidents.findByPk(comment['IncidentId']);
     const contractAddr = incident['contractAddr'];        
     var incident_contract = new caver.klay.Contract(incidents.abi, incident['contract']);
     
@@ -108,12 +108,11 @@ exports.writeReply = async function(req, res) {
 };
 
 exports.like = async function(req, res) {
-    var commentId = req.params.id;
+    var commentId = parseInt(req.params.id);
     var userId = req.body['userId'];
 
     const comment = await models.Comments.findByPk(commentId);
-    const incident = await models.Incidents.findByPk(comment['incidentId']);
-    const contractAddr = incident['contractAddr'];        
+    const incident = await models.Incidents.findByPk(comment['IncidentId']);
     var incident_contract = new caver.klay.Contract(incidents.abi, incident['contract']);
     
     caver.klay.unlockAccount(keystore['address'], password)
@@ -122,13 +121,13 @@ exports.like = async function(req, res) {
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999})
-        .then(()=>{ caver.klay.lockAccount(keystore['address']) })
+        .then((info)=>{ caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);    
     })
     .catch(console.log);
     
     models.Likes.create({
-        commentId: commentId, 
+        CommentId: commentId, 
         userId: userId
     })
     .then((result) => { res.json(result); })
@@ -137,14 +136,13 @@ exports.like = async function(req, res) {
 };
 
 exports.unlike = async function(req, res) {
-    var commentId = req.params.id;
+    var commentId = parseInt(req.params.id);
     var userId = req.body['userId'];
 
     const comment = await models.Comments.findByPk(commentId);
-    const incident = await models.Incidents.findByPk(comment['incidentId']);
-    const contractAddr = incident['contractAddr'];        
+    const incident = await models.Incidents.findByPk(comment['IncidentId']);
     var incident_contract = new caver.klay.Contract(incidents.abi, incident['contract']);
-    
+
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.unlike(commentId)
@@ -157,34 +155,34 @@ exports.unlike = async function(req, res) {
     .catch(console.log);
     
     models.Likes.destroy({
-        where: {commentId: commentId, userId: userId}
+        where: {CommentId: commentId, userId: userId}
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
     
 };
 
-async function getLikeInfo(comments) {
+async function getLikeInfo(userId, comments) {
     var commentList = JSON.parse(JSON.stringify(comments));
     var commentIdList = [];
     for(var i in commentList) {
         commentList[i]['totalLike'] = 0;
-        commentList[i]['Like'] = false;
+        commentList[i]['like'] = false;
         commentIdList[i] = commentList[i]['id'];
     };
 
     var likes = await models.Likes.findAll({
-        where: {commentId: commentIdList}
+        where: {CommentId: commentIdList}
     });
     var likeList = JSON.parse(JSON.stringify(likes));
 
     for(var i in likeList) {
-        var commentId = likeList[i]['commentId'];
+        var commentId = likeList[i]['CommentId'];
         var j = commentList.findIndex(function(item, i){
             return item.id === commentId
         });
         commentList[j]['totalLike']++;
-        commentList[j]['Like'] = (likeList[i]['userId']===userId) ? true:false;
+        commentList[j]['like'] = (likeList[i]['userId']===userId) ? true:false;
     }
 
     return commentList;

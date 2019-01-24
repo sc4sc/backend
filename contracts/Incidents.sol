@@ -52,7 +52,7 @@ contract Incidents {
 	}
 
 	function unlike(uint commentId) public returns (uint) {
-        comments[commentId].totalLike.sub(1);
+        comments[commentId].totalLike = comments[commentId].totalLike-1;
 		return comments[commentId].totalLike;
 	}
 }
