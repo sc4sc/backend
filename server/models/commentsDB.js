@@ -7,9 +7,6 @@ module.exports = function(sequelize, DataTypes) {
     userId: {
       type: DataTypes.TEXT, 
       allowNull: false},
-    incidentId: {
-      type: DataTypes.INTEGER, 
-      allowNull: false, references: models.Incidents, referencesKey: 'id'},
     commentIndex: {
       type: DataTypes.INTEGER,
       allowNull: false},

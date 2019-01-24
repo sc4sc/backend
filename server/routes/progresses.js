@@ -3,7 +3,7 @@ const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
 
 exports.writeProgress =  async function(req, res) {
-    var incidentId = req.params.id;
+    var incidentId = parseInt(req.params.id);
 
     console.log(incidentId);
     var result = await models.Incidents.findByPk(incidentId);
@@ -24,14 +24,14 @@ exports.writeProgress =  async function(req, res) {
     models.Progresses.create({
         content: req.body['content'],
         userId: req.body['userId'], 
-        incidentId: incidentId
+        IncidentId: incidentId
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
 };
 
 exports.progressList = function(req, res) {
-    var incidentId = req.params.id;
+    var incidentId = parseInt(req.params.id);
     var userId = req.body['userId'];
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
@@ -42,7 +42,7 @@ exports.progressList = function(req, res) {
     if (before) {
         models.Progresses.findAll({
             where: {
-                incidentId: incidentId,
+                IncidentId: incidentId,
                 updatedAt: {
                     [Op.lt]: before 
                 }
@@ -55,7 +55,7 @@ exports.progressList = function(req, res) {
     } else if (after) {
         models.Progresses.findAll({
             where: {
-                incidentId: incidentId,
+                IncidentId: incidentId,
                 updatedAt: {
                     [Op.gt]: after 
                 }
@@ -67,7 +67,7 @@ exports.progressList = function(req, res) {
         .catch(console.log);
     } else {
         models.Progresses.findAll({
-            where: {incidentId: incidentId},
+            where: {IncidentId: incidentId},
             order: [[sortBy, order]],
             limit: size
         })
