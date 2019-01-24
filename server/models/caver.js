@@ -3,8 +3,8 @@ const Caver = require('caver-js');
 const incidents = require('../../build/contracts/Incidents.json');
 
 const klaytn_url = process.env.KLAYTN_URL || 'http://127.0.0.1:8563';
-const keyfile_path = process.env.KEYFILE_PATH || '../docker/key';
-const password_path = process.env.PASSWORD_PATH || '../docker/password';
+const keyfile_path = process.env.KEYFILE_PATH || __dirname + '/../../docker/key';
+const password_path = process.env.PASSWORD_PATH || __dirname + '/../../docker/password';
 
 const caver = new Caver(klaytn_url);
 const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
