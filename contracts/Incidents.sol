@@ -1,20 +1,17 @@
 pragma solidity ^0.4.24;
 
-import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
-
 contract Incidents {
-    using SafeMath for uint;
 
     struct Comment {
         uint totalLike;
         bool badge;
-        string content;
+        string content; 
         string reply;
     }
 
 	string incident;
-    uint commentNum = 0;
-    uint progressNum = 0;
+    uint commentNum = 1;
+    uint progressNum = 1;
     mapping (uint => Comment) comments;
     mapping (uint => string) progresses;
 
@@ -23,17 +20,15 @@ contract Incidents {
  	}
 
     function addProgress(string content) public returns (uint) {
-        uint progressId = progressNum;
-        progresses[progressId] = content;
-        progressNum.add(1);
-        return progressId;
+        progresses[progressNum] = content;
+        progressNum += 1;
+        return progressNum;
     }
 
     function addComment(string content) public returns (uint) {
-        uint commentId = commentNum;
-        comments[commentId] = Comment(0, false, content, '');
-        commentNum.add(1);
-        return commentId;
+        comments[commentNum] = Comment(0, false, content, '');
+        commentNum += 1;
+        return commentNum;
     }
 
     function addReply(uint commentId, string content) public returns (string) {
@@ -47,12 +42,12 @@ contract Incidents {
     }
 
 	function like(uint commentId) public returns (uint) {
-        comments[commentId].totalLike.add(1);
+        comments[commentId].totalLike += 1;
 		return comments[commentId].totalLike;
 	}
 
 	function unlike(uint commentId) public returns (uint) {
-        comments[commentId].totalLike = comments[commentId].totalLike-1;
+        comments[commentId].totalLike -= 1;
 		return comments[commentId].totalLike;
 	}
 }
