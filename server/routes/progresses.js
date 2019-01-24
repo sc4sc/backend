@@ -5,6 +5,7 @@ const {caver, incidents, incident, keystore, password} = require('../models/cave
 exports.writeProgress =  async function(req, res) {
     var incidentId = req.params.id;
 
+    console.log(incidentId);
     var result = await models.Incidents.findByPk(incidentId);
     var incident = JSON.parse(JSON.stringify(result));
     var contractAddr = incident['contract'];

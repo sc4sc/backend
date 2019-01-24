@@ -16,7 +16,7 @@ exports.writeComment = async function(req, res) {
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ caver.klay.lockAccount(keystore['address']) })
+        .then(()=>{ console.log("commentAdd transaction done\n"); caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);
     })
     .catch(console.log);
@@ -36,7 +36,7 @@ exports.writeComment = async function(req, res) {
 
 exports.commentList = async function(req, res) {
     var incidentId = req.params.id;
-    var userId = req.body['userId'];
+    var userId = req.query.userId;
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
@@ -73,7 +73,7 @@ exports.commentList = async function(req, res) {
             limit: size
         });
     }
-    var commentList = await getLikeInfo(comments);
+    var commentList = await getLikeInfo(userId, comments);
     res.json(commentList);
 };
 
@@ -113,7 +113,6 @@ exports.like = async function(req, res) {
 
     const comment = await models.Comments.findByPk(commentId);
     const incident = await models.Incidents.findByPk(comment['incidentId']);
-    const contractAddr = incident['contractAddr'];        
     var incident_contract = new caver.klay.Contract(incidents.abi, incident['contract']);
     
     caver.klay.unlockAccount(keystore['address'], password)
@@ -122,7 +121,7 @@ exports.like = async function(req, res) {
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999})
-        .then(()=>{ caver.klay.lockAccount(keystore['address']) })
+        .then((info)=>{ console.log(info); caver.klay.lockAccount(keystore['address']) })
         .catch(console.log);    
     })
     .catch(console.log);
@@ -137,14 +136,14 @@ exports.like = async function(req, res) {
 };
 
 exports.unlike = async function(req, res) {
+    console.log("unlike");
     var commentId = req.params.id;
     var userId = req.body['userId'];
 
     const comment = await models.Comments.findByPk(commentId);
     const incident = await models.Incidents.findByPk(comment['incidentId']);
-    const contractAddr = incident['contractAddr'];        
     var incident_contract = new caver.klay.Contract(incidents.abi, incident['contract']);
-    
+
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident_contract.methods.unlike(commentId)
@@ -164,12 +163,12 @@ exports.unlike = async function(req, res) {
     
 };
 
-async function getLikeInfo(comments) {
+async function getLikeInfo(userId, comments) {
     var commentList = JSON.parse(JSON.stringify(comments));
     var commentIdList = [];
     for(var i in commentList) {
         commentList[i]['totalLike'] = 0;
-        commentList[i]['Like'] = false;
+        commentList[i]['like'] = false;
         commentIdList[i] = commentList[i]['id'];
     };
 
@@ -184,7 +183,7 @@ async function getLikeInfo(comments) {
             return item.id === commentId
         });
         commentList[j]['totalLike']++;
-        commentList[j]['Like'] = (likeList[i]['userId']===userId) ? true:false;
+        commentList[j]['like'] = (likeList[i]['userId']===userId) ? true:false;
     }
 
     return commentList;
