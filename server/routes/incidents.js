@@ -1,7 +1,8 @@
 const models = require('../models');
 const expo = require('./push');
-const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
+const queue = require('../models/jobQueue').createQueue();
+const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
     var userId = req.body['userId'];
@@ -9,31 +10,20 @@ exports.report =  async function(req, res) {
     var lng = req.body['lng'];
     var type = req.body['type'];
 
-    console.log(userId);
-
     var newIncident = await models.Incidents.create(
         {type: type, userId: userId, lat: lat, lng: lng});
-    console.log(newIncident['id']);
     res.json(newIncident);
     
+    queue.process('deploy', function(job, done) {  
+        deployIncident(job.data.content, job.data.id, done);
+    }); 
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incident.deploy({
-            data: incidents["bytecode"],
-            arguments: [JSON.stringify(req.body)]})
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then((instance) => {  
-            caver.klay.lockAccount(keystore['address']);
-            models.Incidents.update(
-                {contract: instance._address},
-                {where: {id: newIncident['id']}})
-            .catch(console.log);
-        })
-        .catch(console.log);
-    });
+    var job = queue.create('deploy', {
+        content: JSON.stringify(req.body),
+        id: newIncident['id']
+    })
+    .priority('critical').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
+    .save();
 
     models.Login.findAll({
         where: {
@@ -105,3 +95,24 @@ exports.readIncident = function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 };
+
+function deployIncident(content, incidentId, done) {
+    caver.klay.unlockAccount(keystore['address'], password)
+    .then(() => {
+        incident.deploy({
+            data: incidents["bytecode"],
+            arguments: [content]})
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
+        .then((instance) => {  
+            caver.klay.lockAccount(keystore['address']);
+            models.Incidents.update(
+                {contract: instance._address},
+                {where: {id: incidentId}})
+            .then(done())
+            .catch(console.log);
+        })
+        .catch(console.log);
+    });
+}

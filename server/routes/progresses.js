@@ -1,25 +1,14 @@
 const models = require('../models');
-const Op = models.Sequelize.Op;
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
+const queue = require('../models/jobQueue').createQueue();
+const Op = models.Sequelize.Op;
 
 exports.writeProgress =  async function(req, res) {
     var incidentId = parseInt(req.params.id);
 
-    console.log(incidentId);
     var result = await models.Incidents.findByPk(incidentId);
     var incident = JSON.parse(JSON.stringify(result));
     var contractAddr = incident['contract'];
-    var incident_contract = new caver.klay.Contract(incidents.abi, contractAddr);
-    
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incident_contract.methods.addProgress(JSON.stringify(req.body))
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ caver.klay.lockAccount(keystore['address']) })
-        .catch(console.log);
-    });
 
     models.Progresses.create({
         content: req.body['content'],
@@ -28,6 +17,18 @@ exports.writeProgress =  async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
+
+    queue.process('progress', function(job, done) {  
+        addProgress(job.data.contractAddr, job.data.content, done);
+    }); 
+
+    var job = queue.create('progress', {
+        contractAddr: contractAddr,
+        content: JSON.stringify(req.body)
+    })
+    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
+    .save();
+
 };
 
 exports.progressList = function(req, res) {
@@ -75,3 +76,28 @@ exports.progressList = function(req, res) {
         .catch(console.log);
     }
 };
+
+function addProgress(contractAddr, content, done) {
+    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+    incidentContract.options.address = keystore['address'];
+
+    caver.klay.unlockAccount(keystore['address'], password)
+    .then(() => {
+        incidentContract.methods.addProgress(content)
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
+        .then(()=>{ 
+            caver.klay.lockAccount(keystore['address']); 
+            done();
+        })
+        .catch((error) => {
+            console.log(error);
+            done(new Error("addComment call error"));
+        });
+    })
+    .catch((error) => {
+        console.log(error);
+        done(new Error("unlock error"));
+    });
+}
