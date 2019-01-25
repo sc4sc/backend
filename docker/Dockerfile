@@ -3,7 +3,7 @@ FROM node:latest
 WORKDIR /sc4sc
 
 # Speeding up by caching node_modules
-ADD ./backend ./backend/package.json
+ADD ./backend/package.json ./backend/package.json
 RUN cd ./backend && npm install
 COPY ./backend ./backend
 
