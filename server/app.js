@@ -31,8 +31,8 @@ if (enableHTTPS) {
 
   const port = process.env.HTTPS_PORT | 443;
   const options = {
-    key: fs.readFileSync('https/key.pem'),
-    cert: fs.readFileSync('https/cert.pem')
+    key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
+    cert: fs.readFileSync(process.env.HTTPS_CSR_PATH)
   };
   
   https.createServer(options, app).listen(port, function() {

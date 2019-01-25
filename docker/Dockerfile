@@ -1,6 +1,7 @@
 FROM node:latest
 
 WORKDIR /sc4sc
+ADD ./https ./https
 ADD ./backend ./backend
 ADD ./klaytn ./klaytn
 ADD *.sh Dockerfile ./
