@@ -14,7 +14,7 @@ services:
       PASSWORD_PATH: /sc4sc/klaytn/rn/data/keystore/password
       ENABLE_HTTPS: 1
       HTTPS_KEY_PATH: /sc4sc/https/key.pem
-      HTTPS_CSR_PATH: /sc4sc/https/cert.pem
+      HTTPS_CERT_PATH: /sc4sc/https/cert.pem
     command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; ./run_app_with_blockchain.sh'
   db:
     image: postgres
