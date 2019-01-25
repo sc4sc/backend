@@ -23,6 +23,22 @@ var server = app.listen(port, function(){
 	console.log("Server has started on port [" + port + "]");
 });
 
+const enableHTTPS = process.env.ENABLE_HTTPS;
+
+if (enableHTTPS) {
+  const https = require('https');
+  const fs = require('fs');
+
+  const port = process.env.HTTPS_PORT | 443;
+  const options = {
+    key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
+    cert: fs.readFileSync(process.env.HTTPS_CERT_PATH)
+  };
+  
+  https.createServer(options, app).listen(port, function() {
+    console.log(`HTTPS has started on port [${port}]`)
+  });
+}
 
 
 
