@@ -4,6 +4,7 @@ services:
     image: sc4sc:prototype
     ports: 
       - "8000:8000"
+      - "443:443"
     depends_on:
       - db
     environment:
