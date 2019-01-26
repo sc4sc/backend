@@ -1,6 +1,6 @@
 const models = require('../models');
 const {caver, incidents, incident, keystore, password} = require('../models/caver');
-const queue = require('../models/jobQueue').createQueue();
+const queue = require('../models/jobQueue').queue();
 const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
