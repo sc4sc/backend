@@ -1,7 +1,7 @@
 const models = require('../models');
 const expo = require('./push');
-const {caver, incidents, incident, keystore, password} = require('../models/caver');
-const queue = require('../models/jobQueue').queue();
+const {caver, incidents, incident, keystore, password} = require('../library/caver');
+const queue = require('../library/jobQueue').queue;
 const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
@@ -13,10 +13,6 @@ exports.report =  async function(req, res) {
     var newIncident = await models.Incidents.create(
         {type: type, userId: userId, lat: lat, lng: lng});
     res.json(newIncident);
-    
-    queue.process('deploy', function(job, done) {  
-        deployIncident(job.data.content, job.data.id, done);
-    }); 
 
     var job = queue.create('deploy', {
         content: JSON.stringify(req.body),
@@ -96,7 +92,7 @@ exports.readIncident = function(req, res) {
     .catch(console.log);
 };
 
-function deployIncident(content, incidentId, done) {
+exports.deployIncident = function(content, incidentId, done) {
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
         incident.deploy({
