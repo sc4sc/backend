@@ -1,6 +1,6 @@
 const models = require('../models');
 const {caver, incidents, incident, keystore, password} = require('../library/caver');
-const queue = require('../library/jobQueue').queue;
+const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.writeProgress =  async function(req, res) {
@@ -18,13 +18,7 @@ exports.writeProgress =  async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    var job = queue.create('progress', {
-        contractAddr: contractAddr,
-        content: JSON.stringify(req.body)
-    })
-    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
-
+    jobQueue.addJobProgress(contractAddr, JSON.stringify(req.body));
 };
 
 exports.progressList = function(req, res) {
