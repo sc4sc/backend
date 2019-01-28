@@ -9,6 +9,7 @@ services:
       - ./https:/sc4sc/https
     depends_on:
       - db
+      - redis
     environment:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
@@ -18,7 +19,7 @@ services:
       ENABLE_HTTPS: 1
       HTTPS_KEY_PATH: /sc4sc/https/key.pem
       HTTPS_CERT_PATH: /sc4sc/https/cert.pem
-    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; ./run_app_with_blockchain.sh'
+    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; ./run_app_with_blockchain.sh'
   redis:
     image: redis
   db:
