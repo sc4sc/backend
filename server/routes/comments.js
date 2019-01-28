@@ -1,6 +1,6 @@
 const models = require('../models');
 const {caver, incidents, incident, keystore, password} = require('../library/caver');
-const queue = require('../library/jobQueue').queue;
+const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
@@ -22,12 +22,7 @@ exports.writeComment = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    var job = queue.create('comment', {
-        contractAddr: contractAddr,
-        content: JSON.stringify(req.body)
-    })
-    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
+    jobQueue.addJobComment(contractAddr, JSON.stringify(req.body));
 };
 
 exports.commentList = async function(req, res) {
@@ -89,18 +84,7 @@ exports.writeReply = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    queue.process('reply', function(job, done) {  
-        addReply(job.data.contractAddr, job.data.commentId, job.data.content, done);
-    }); 
-
-    var job = queue.create('reply', {
-        contractAddr: contractAddr, 
-        commentId: commentId,
-        content: JSON.stringify(req.body),
-    })
-    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
-
+    jobQueue.addJobReply(contractAddr, commentId, JSON.stringify(req.body));
 };
 
 exports.like = async function(req, res) {
@@ -118,17 +102,7 @@ exports.like = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-
-    queue.process('like', function(job, done) {  
-        like(job.data.contractAddr, job.data.commentId, done);
-    }); 
-
-    var job = queue.create('like', {
-        contractAddr: contractAddr,
-        commentId: commentId
-    })
-    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
+    jobQueue.addJobLike(contractAddr, commentId);
 };
 
 exports.unlike = async function(req, res) {
@@ -145,16 +119,7 @@ exports.unlike = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    queue.process('unlike', function(job, done) {  
-        unlike(job.data.contractAddr, job.data.commentId, done);
-    }); 
-
-    var job = queue.create('unlike', {
-        contractAddr: contractAddr,
-        commentId: commentId
-    })
-    .priority('high').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
+    jobQueue.addJobUnlike(contractAddr, commentId);
 };
 
 async function getLikeInfo(userId, comments) {
@@ -186,7 +151,7 @@ async function getLikeInfo(userId, comments) {
     return commentList;
 }
 
-exports.addComment = function (contractAddr, content, done) {
+exports.addComment = function(contractAddr, content, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
@@ -212,7 +177,7 @@ exports.addComment = function (contractAddr, content, done) {
 
 }
 
-function addReply(contractAddr, commentId, content, done) {
+exports.addReply = function(contractAddr, commentId, content, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
@@ -237,13 +202,13 @@ function addReply(contractAddr, commentId, content, done) {
     });
 }
 
-function like(contractAddr, commentId, done) {
+exports.sendlike = function(contractAddr, commentId, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
-        incidentContract.methods.like(commentId)
+        incidentContract.methods.like(parseInt(commentId))
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })
@@ -262,13 +227,13 @@ function like(contractAddr, commentId, done) {
     });
 }
 
-function unlike(contractAddr, commentId, done) {
+exports.sendUnlike = function(contractAddr, commentId, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
-        incidentContract.methods.unlike(commentId)
+        incidentContract.methods.unlike(parseInt(commentId))
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })

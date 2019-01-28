@@ -1,7 +1,7 @@
 const models = require('../models');
 const expo = require('./push');
 const {caver, incidents, incident, keystore, password} = require('../library/caver');
-const queue = require('../library/jobQueue').queue;
+const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
@@ -13,13 +13,8 @@ exports.report =  async function(req, res) {
     var newIncident = await models.Incidents.create(
         {type: type, userId: userId, lat: lat, lng: lng});
     res.json(newIncident);
-
-    var job = queue.create('deploy', {
-        content: JSON.stringify(req.body),
-        id: newIncident['id']
-    })
-    .priority('critical').attempts(3).backoff( {delay: 60*1000, type:'fixed'})
-    .save();
+    
+    jobQueue.addJobIncident(JSON.stringify(req.body), newIncident['id']);
 
     models.Login.findAll({
         where: {
