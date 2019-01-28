@@ -1,5 +1,5 @@
 const models = require('../models');
-const {caver, incidents, incident} = require('../models/caver');
+const {caver, incidents, incident} = require('../library/caver');
 
 exports.login = function(req, res) {
 
