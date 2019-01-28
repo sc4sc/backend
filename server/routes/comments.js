@@ -1,6 +1,6 @@
 const models = require('../models');
-const {caver, incidents, incident, keystore, password} = require('../models/caver');
-const queue = require('../models/jobQueue').queue();
+const {caver, incidents, incident, keystore, password} = require('../library/caver');
+const queue = require('../library/jobQueue').queue;
 const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
@@ -21,10 +21,6 @@ exports.writeComment = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
-
-    queue.process('comment', function(job, done) {  
-        addComment(job.data.contractAddr, job.data.content, done);
-    }); 
 
     var job = queue.create('comment', {
         contractAddr: contractAddr,
@@ -190,7 +186,7 @@ async function getLikeInfo(userId, comments) {
     return commentList;
 }
 
-function addComment(contractAddr, content, done) {
+exports.addComment = function (contractAddr, content, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
