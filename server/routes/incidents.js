@@ -37,6 +37,23 @@ exports.report =  async function(req, res) {
 
 };
 
+exports.changeState = async function(req, res) {
+    var incidentId = req.params.id;
+    var newState = req.body['state'];
+
+    models.Incidents.update(
+        {state: newState},
+        {where: {id: incidentId}}
+    )
+    .then((result) => { res.json(result); })
+    .catch(console.log);
+
+    var incident = await models.Incidents.findByPk(incidentId);
+    var contractAddr = incident['contract'];        
+
+    jobQueue.addJobState(contractAddr, newState);
+}
+
 exports.incidentList = function(req, res) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
@@ -105,5 +122,30 @@ exports.deployIncident = function(content, incidentId, done) {
             .catch(console.log);
         })
         .catch(console.log);
+    });
+}
+
+exports.sendState = function(contractAddr, newState, done) {
+    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+    incidentContract.options.address = keystore['address'];
+
+    caver.klay.unlockAccount(keystore['address'], password)
+    .then(() => {
+        incidentContract.methods.changeState(newState)
+        .send({
+            from: keystore['address'],
+            gasPrice: 0, gas: 999999999999 })
+        .then(()=>{ 
+            caver.klay.lockAccount(keystore['address']);
+            done();
+        })
+        .catch((error) => {
+            console.log(error);
+            done(new Error("like call error"));
+        });
+    })
+    .catch((error) => {
+        console.log(error);
+        done(new Error("unlock error"));
     });
 }

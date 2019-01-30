@@ -12,6 +12,10 @@ queue.process('deploy', function(job,done){
     incident.deployIncident(job.data.content, job.data.id, done)
 });
 
+queue.process('state', function(job,done){
+    incident.sendState(job.data.contractAddr, job.data.newState, done)
+});
+
 queue.process('comment', function(job,done){
     comment.addComment(job.data.contractAddr, job.data.content, done)
 });
@@ -37,6 +41,13 @@ exports.addJobIncident = async function(content, id) {
         content: content,
         id: id 
     }, { priority: 1, attempts: 3, delay: 1000 });
+}
+
+exports.addJobState = async function(contractAddr, newState) {
+    const job = await queue.add('state', { 
+        contractAddr: contractAddr, 
+        newState: newState
+    }, { priority: 2, attempts: 3, delay: 1000 });
 }
 
 exports.addJobComment = async function(contractAddr, content) {

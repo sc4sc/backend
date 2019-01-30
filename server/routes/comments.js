@@ -84,7 +84,7 @@ exports.writeReply = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    jobQueue.addJobReply(contractAddr, commentId, JSON.stringify(req.body));
+    jobQueue.addJobReply(contractAddr, comment['commentIndex'], JSON.stringify(req.body));
 };
 
 exports.like = async function(req, res) {
@@ -102,7 +102,7 @@ exports.like = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    jobQueue.addJobLike(contractAddr, commentId);
+    jobQueue.addJobLike(contractAddr, comment['commentIndex']);
 };
 
 exports.unlike = async function(req, res) {
@@ -119,7 +119,7 @@ exports.unlike = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    jobQueue.addJobUnlike(contractAddr, commentId);
+    jobQueue.addJobUnlike(contractAddr, comment['commentIndex']);
 };
 
 async function getLikeInfo(userId, comments) {
@@ -177,13 +177,13 @@ exports.addComment = function(contractAddr, content, done) {
 
 }
 
-exports.addReply = function(contractAddr, commentId, content, done) {
+exports.addReply = function(contractAddr, commentIndex, content, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
-        incidentContract.methods.addReply(commentId, content)
+        incidentContract.methods.addReply(commentIndex, content)
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })
@@ -202,13 +202,13 @@ exports.addReply = function(contractAddr, commentId, content, done) {
     });
 }
 
-exports.sendlike = function(contractAddr, commentId, done) {
+exports.sendlike = function(contractAddr, commentIndex, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
-        incidentContract.methods.like(parseInt(commentId))
+        incidentContract.methods.like(parseInt(commentIndex))
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })
@@ -227,13 +227,13 @@ exports.sendlike = function(contractAddr, commentId, done) {
     });
 }
 
-exports.sendUnlike = function(contractAddr, commentId, done) {
+exports.sendUnlike = function(contractAddr, commentIndex, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
     caver.klay.unlockAccount(keystore['address'], password)
     .then(() => {
-        incidentContract.methods.unlike(parseInt(commentId))
+        incidentContract.methods.unlike(parseInt(commentIndex))
         .send({
             from: keystore['address'],
             gasPrice: 0, gas: 999999999999 })
