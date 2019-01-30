@@ -10,6 +10,7 @@ contract Incidents {
     }
 
 	string incident;
+    string state;
     uint commentNum = 1;
     uint progressNum = 1;
     mapping (uint => Comment) comments;
@@ -17,6 +18,7 @@ contract Incidents {
 
 	constructor(string _incident) public {
 		incident = _incident;
+        state = "확인중";
  	}
 
     function addProgress(string content) public returns (uint) {
@@ -31,23 +33,23 @@ contract Incidents {
         return commentNum;
     }
 
-    function addReply(uint commentId, string content) public returns (string) {
-        comments[commentId].reply = content;
-        return comments[commentId].reply;
+    function changeState(string newState) public returns (string) {
+        state = newState;
+        return state;
     }
 
-    function badge(uint commentId) public returns (bool) {
-        comments[commentId].badge = true;
-        return comments[commentId].badge;
+    function addReply(uint commentIndex, string content) public returns (string) {
+        comments[commentIndex].reply = content;
+        return comments[commentIndex].reply;
     }
 
-	function like(uint commentId) public returns (uint) {
-        comments[commentId].totalLike += 1;
-		return comments[commentId].totalLike;
+	function like(uint commentIndex) public returns (uint) {
+        comments[commentIndex].totalLike += 1;
+		return comments[commentIndex].totalLike;
 	}
 
-	function unlike(uint commentId) public returns (uint) {
-        comments[commentId].totalLike -= 1;
-		return comments[commentId].totalLike;
+	function unlike(uint commentIndex) public returns (uint) {
+        comments[commentIndex].totalLike -= 1;
+		return comments[commentIndex].totalLike;
 	}
 }

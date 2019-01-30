@@ -7,6 +7,7 @@ const route_login = require('./login');
 
 //incident
 router.post('/incidents', route_incident.report);
+router.post('/incidents/:id', route_incident.changeState);
 router.get('/incidents', route_incident.incidentList);
 router.get('/incidents/:id', route_incident.readIncident);
 
