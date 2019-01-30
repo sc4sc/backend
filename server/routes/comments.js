@@ -44,7 +44,10 @@ exports.commentList = async function(req, res) {
                 }
             },
             order: [[sortBy, order]],
-            limit: size
+            limit: size,
+            include: [
+                { model: models.Likes}
+            ],
         });
     } else if (after) {
         comments = await models.Comments.findAll({
@@ -55,13 +58,19 @@ exports.commentList = async function(req, res) {
                 }
             },
             order: [[sortBy, order]],
-            limit: size
+            limit: size,
+            include: [
+                { model: models.Likes}
+            ],
         });
     } else {
         comments = await models.Comments.findAll({
             where: {IncidentId: incidentId},
             order: [[sortBy, order]],
-            limit: size
+            limit: size,
+            include: [
+                {model: models.Likes}
+            ],
         });
     }
     var commentList = await getLikeInfo(userId, comments);
@@ -124,29 +133,14 @@ exports.unlike = async function(req, res) {
 
 async function getLikeInfo(userId, comments) {
     var commentList = JSON.parse(JSON.stringify(comments));
-    var commentIdList = [];
     for(var i in commentList) {
-        commentList[i]['totalLike'] = 0;
-        commentList[i]['like'] = false;
-        commentIdList[i] = commentList[i]['id'];
-    };
-
-    var likes = await models.Likes.findAll({
-        where: {CommentId: commentIdList}
-    });
-    var likeList = JSON.parse(JSON.stringify(likes));
-
-    for(var i in likeList) {
-        var commentId = likeList[i]['CommentId'];
-        var j = commentList.findIndex(function(item, i){
-            return item.id === commentId
+        likesList = JSON.parse(JSON.stringify(commentList[i]['Likes']));
+        commentList[i]['totalLike'] = commentList[i]['Likes'].length;      
+        var mylike = likesList.filter(function (item) {
+            return item.userId === userId;
         });
-        commentList[j]['totalLike']++;
-        if (!commentList[j]['like']) {
-            commentList[j]['like'] = (likeList[i]['userId']===userId) ? true:false;
-        } 
-        
-    }
+        commentList[i]['like'] = mylike.length ? true:false;
+    };
 
     return commentList;
 }

@@ -10,9 +10,6 @@ module.exports = function(sequelize, DataTypes) {
     commentIndex: {
       type: DataTypes.INTEGER,
       allowNull: false},
-    badge: {
-      type: DataTypes.BOOLEAN, 
-      defaultValue: false},
     reply: {
       type: DataTypes.TEXT,
       allowNull: true} 

@@ -54,7 +54,7 @@ exports.changeState = async function(req, res) {
     jobQueue.addJobState(contractAddr, newState);
 }
 
-exports.incidentList = function(req, res) {
+exports.incidentList = async function(req, res) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
@@ -70,9 +70,13 @@ exports.incidentList = function(req, res) {
             },
             order: [[sortBy, order]],
             limit: size,
+            include: [
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+            ],
         })
-        .then((result) => { res.json(result); })
+        .then((result) => {res.json(result)})
         .catch(console.log);
+        
     } else if (after) {
         models.Incidents.findAll({
             where: {
@@ -82,18 +86,24 @@ exports.incidentList = function(req, res) {
             },
             order: [[sortBy, order]],
             limit: size,
+            include: [
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+            ],
         })
-        .then((result) => { res.json(result); })
+        .then((result) => {res.json(result)})
         .catch(console.log);
+        
     } else {
         models.Incidents.findAll({
             order: [[sortBy, order]],
             limit: size,
+            include: [
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+            ],
         })
-        .then((result) => { res.json(result); })
+        .then((result) => {res.json(result)})
         .catch(console.log);
     }
-    
 };
 
 exports.readIncident = function(req, res) {
@@ -123,7 +133,7 @@ exports.deployIncident = function(content, incidentId, done) {
         })
         .catch(console.log);
     });
-}
+};
 
 exports.sendState = function(contractAddr, newState, done) {
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
@@ -148,4 +158,5 @@ exports.sendState = function(contractAddr, newState, done) {
         console.log(error);
         done(new Error("unlock error"));
     });
-}
+};
+
