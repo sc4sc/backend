@@ -1,6 +1,5 @@
 const models = require('../models');
 const expo = require('./push');
-const {caver, incidents, incident, keystore, password} = require('../library/caver');
 const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
@@ -113,50 +112,3 @@ exports.readIncident = function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 };
-
-exports.deployIncident = function(content, incidentId, done) {
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incident.deploy({
-            data: incidents["bytecode"],
-            arguments: [content]})
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then((instance) => {  
-            caver.klay.lockAccount(keystore['address']);
-            models.Incidents.update(
-                {contract: instance._address},
-                {where: {id: incidentId}})
-            .then(done())
-            .catch(console.log);
-        })
-        .catch(console.log);
-    });
-};
-
-exports.sendState = function(contractAddr, newState, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
-
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.changeState(newState)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']);
-            done();
-        })
-        .catch((error) => {
-            console.log(error);
-            done(new Error("like call error"));
-        });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
-};
-
