@@ -17,8 +17,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull:false},
       state: {
         type: DataTypes.TEXT,
-        allowNull: true, defaultValue: "확인중"
-      }
+        allowNull: true, defaultValue: "확인중"}
     }, {
       classMethods: {},
       tableName: 'Incidents',

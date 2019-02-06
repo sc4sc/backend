@@ -4,6 +4,7 @@ const route_incident = require('./incidents');
 const route_comment = require('./comments');
 const route_progress = require('./progresses');
 const route_login = require('./login');
+const route_search = require('../library/elasticsearch');
 
 //incident
 router.post('/incidents', route_incident.report);
@@ -26,6 +27,7 @@ router.get('/incidents/:id/progresses', route_progress.progressList);
 //login
 router.post('/authenticate', route_login.login);
 
-
+//search
+router.get('/search', route_search.search);
 
 module.exports = router;

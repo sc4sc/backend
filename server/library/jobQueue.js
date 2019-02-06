@@ -1,7 +1,5 @@
 const Queue = require('bull');
-const incident = require(__dirname + "/../routes/incidents");
-const comment = require(__dirname + "/../routes/comments");
-const progress = require(__dirname + "/../routes/progresses");
+const blockchain = require('./caver');
 
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 var queue = new Queue('blockchain', REDIS_URL);
@@ -9,55 +7,55 @@ var queue = new Queue('blockchain', REDIS_URL);
 setQueue(queue);
 
 queue.process('deploy', function(job,done){
-    incident.deployIncident(job.data.content, job.data.id, done)
+    blockchain.deployIncident(job.data.content, job.data.id, done)
 });
 
 queue.process('state', function(job,done){
-    incident.sendState(job.data.contractAddr, job.data.newState, done)
+    blockchain.sendState(job.data.contractAddr, job.data.newState, done)
 });
 
 queue.process('comment', function(job,done){
-    comment.addComment(job.data.contractAddr, job.data.content, done)
+    blockchain.addComment(job.data.contractAddr, job.data.content, done)
 });
 
 queue.process('reply', function(job,done){
-    comment.addReply(job.data.contractAddr, job.data.commentId, job.data.content, done)
+    blockchain.addReply(job.data.contractAddr, job.data.commentId, job.data.content, done)
 });
 
 queue.process('like', function(job,done){
-    comment.sendlike(job.data.contractAddr, job.data.commentId, done)
+    blockchain.sendlike(job.data.contractAddr, job.data.commentId, done)
 });
 
 queue.process('unlike', function(job,done){
-    comment.sendUnlike(job.data.contractAddr, job.data.commentId, done)
+    blockchain.sendUnlike(job.data.contractAddr, job.data.commentId, done)
 });
 
 queue.process('progress', function(job,done){
-    progress.addProgress(job.data.contractAddr, job.data.content, done)
+    blockchain.addProgress(job.data.contractAddr, job.data.content, done)
 });
 
-exports.addJobIncident = async function(content, id) {
+module.exports.addJobIncident = async function(content, id) {
     const job = await queue.add('deploy', { 
         content: content,
         id: id 
     }, { priority: 1, attempts: 3, delay: 1000 });
 }
 
-exports.addJobState = async function(contractAddr, newState) {
+module.exports.addJobState = async function(contractAddr, newState) {
     const job = await queue.add('state', { 
         contractAddr: contractAddr, 
         newState: newState
     }, { priority: 2, attempts: 3, delay: 1000 });
 }
 
-exports.addJobComment = async function(contractAddr, content) {
+module.exports.addJobComment = async function(contractAddr, content) {
     const job = await queue.add('comment', { 
         contractAddr: contractAddr,
         content: content
     }, { priority: 2, attempts: 3, delay: 1000 });
 }
 
-exports.addJobReply = async function(contractAddr, commentId, content) {
+module.exports.addJobReply = async function(contractAddr, commentId, content) {
     const job = await queue.add('reply', { 
         contractAddr: contractAddr, 
         commentId: commentId,
@@ -65,7 +63,7 @@ exports.addJobReply = async function(contractAddr, commentId, content) {
     }, { priority: 2, attempts: 3, delay: 1000 });
 }
 
-exports.addJobLike = async function(contractAddr, commentId) {
+module.exports.addJobLike = async function(contractAddr, commentId) {
     const job = await queue.add('like', { 
         contractAddr: contractAddr,
         commentId: commentId
@@ -73,21 +71,19 @@ exports.addJobLike = async function(contractAddr, commentId) {
 }
 
 
-exports.addJobUnlike = async function(contractAddr, commentId) {
+module.exports.addJobUnlike = async function(contractAddr, commentId) {
     const job = await queue.add('unlike', { 
         contractAddr: contractAddr,
         commentId: commentId
     }, { priority: 2, attempts: 3, delay: 1000 });
 }
 
-exports.addJobProgress = async function(contractAddr, content) {
+module.exports.addJobProgress = async function(contractAddr, content) {
     const job = await queue.add('progress', { 
         contractAddr: contractAddr,
         content: content
     }, { priority: 2, attempts: 3, delay: 1000 });
 }
-
-
 
 function setQueue(queue) {
     queue.on('active', function(job, jobPromise){
@@ -101,5 +97,3 @@ function setQueue(queue) {
         console.log(`Job ${job.id} failed:(\n${result}`);
     });
 }
-
-module.exports.queue = queue;

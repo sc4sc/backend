@@ -15,6 +15,7 @@ RUN cd ./klaytn && ./setup.sh && chmod +x ./run.sh && cd ..
 
 ADD ./key ./klaytn/rn/data/keystore/
 ADD ./password ./klaytn/rn/data/keystore/
+ADD ./searchData ./searchData
 
 EXPOSE 8000
 CMD ./run_app_with_blockchain.sh

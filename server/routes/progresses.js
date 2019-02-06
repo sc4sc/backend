@@ -1,5 +1,4 @@
 const models = require('../models');
-const {caver, incidents, incident, keystore, password} = require('../library/caver');
 const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
@@ -66,28 +65,3 @@ exports.progressList = function(req, res) {
         .catch(console.log);
     }
 };
-
-exports.addProgress = function(contractAddr, content, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
-
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.addProgress(content)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']); 
-            done();
-        })
-        .catch((error) => {
-            console.log(error);
-            done(new Error("addComment call error"));
-        });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
-}
