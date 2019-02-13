@@ -11,7 +11,6 @@ exports.writeProgress =  async function(req, res) {
 
     models.Progresses.create({
         content: req.body['content'],
-        userId: req.body['userId'], 
         IncidentId: incidentId
     })
     .then((result) => { res.json(result); })
@@ -22,7 +21,6 @@ exports.writeProgress =  async function(req, res) {
 
 exports.progressList = function(req, res) {
     var incidentId = parseInt(req.params.id);
-    var userId = req.body['userId'];
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';

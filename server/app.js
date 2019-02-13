@@ -1,11 +1,17 @@
 const express = require('express');
 const bodyParser  = require('body-parser');
+const passport = require('passport');
+
 const models = require('./models');
+const route_user = require('./routes/user');
 
 const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(bodyParser.json());
+app.use(passport.initialize());
+
+app.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
 app.use('/',require('./routes'));
 
 models.sequelize.sync()

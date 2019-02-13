@@ -3,10 +3,7 @@ module.exports = function(sequelize, DataTypes) {
     return sequelize.define('Progresses', {
       content: {
         type: DataTypes.STRING, 
-        allowNull: false},
-      userId: {
-          type: DataTypes.TEXT, 
-          allowNull: false}
+        allowNull: false}
     }, {
       classMethods: {},
       tableName: 'Progresses',

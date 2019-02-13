@@ -3,6 +3,12 @@ var config = {
     db.Incidents.hasMany(db.Comments);
     db.Incidents.hasMany(db.Progresses);
     db.Comments.hasMany(db.Likes);
+    
+    db.Users.hasMany(db.Incidents);
+    db.Users.hasMany(db.Comments);
+    db.Users.hasMany(db.Likes);
+
+    db.Comments.belongsTo(db.Users);
   }
 };
 
