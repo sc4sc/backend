@@ -4,21 +4,21 @@ const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
-    var userId = req.body['userId'];
+    var UserId = req.user.id;
     var lat = req.body['lat'];
     var lng = req.body['lng'];
     var type = req.body['type'];
 
     var newIncident = await models.Incidents.create(
-        {type: type, userId: userId, lat: lat, lng: lng});
+        {type: type, UserId: UserId, lat: lat, lng: lng});
     res.json(newIncident);
     
     jobQueue.addJobIncident(JSON.stringify(req.body), newIncident['id']);
 
-    models.Login.findAll({
+    models.Users.findAll({
         where: {
-            userId: {
-                [Op.ne]: userId 
+            id: {
+                [Op.ne]: UserId 
             }
         },
         attributes: ['expotoken']

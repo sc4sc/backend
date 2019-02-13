@@ -14,7 +14,7 @@ exports.writeComment = async function(req, res) {
     
     models.Comments.create({
         content: req.body['content'], 
-        userId: req.body['userId'], 
+        UserId: req.user.id, 
         IncidentId: incidentId,
         commentIndex: commentIndex,
     })
@@ -26,7 +26,7 @@ exports.writeComment = async function(req, res) {
 
 exports.commentList = async function(req, res) {
     var incidentId = parseInt(req.params.id);
-    var userId = req.query.userId;
+    var UserId = req.user.id;
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
@@ -45,7 +45,8 @@ exports.commentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                { model: models.Likes}
+                {model: models.Likes},
+                {model: models.Users},
             ],
         });
     } else if (after) {
@@ -59,7 +60,8 @@ exports.commentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                { model: models.Likes}
+                {model: models.Likes},
+                {model: models.Users}
             ],
         });
     } else {
@@ -68,17 +70,18 @@ exports.commentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                {model: models.Likes}
+                {model: models.Likes},
+                {model: models.Users}
             ],
         });
     }
-    var commentList = await getLikeInfo(userId, comments);
+    const commentList = await getLikeInfo(UserId, comments);
     res.json(commentList);
 };
 
 exports.writeReply = async function(req, res) {
     var commentId = req.params.id;
-    var userId = req.body['userId'];
+    var UserId = req.user.id;
     var content = req.body['content'];
 
     var comment = await models.Comments.findByPk(commentId);
@@ -97,7 +100,7 @@ exports.writeReply = async function(req, res) {
 
 exports.like = async function(req, res) {
     var commentId = parseInt(req.params.id);
-    var userId = req.body['userId'];
+    var UserId = req.user.id;
 
     var comment = await models.Comments.findByPk(commentId);
     var incident = await models.Incidents.findByPk(comment['IncidentId']);
@@ -105,7 +108,7 @@ exports.like = async function(req, res) {
     
     models.Likes.create({
         CommentId: commentId, 
-        userId: userId
+        UserId: UserId
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
@@ -115,14 +118,14 @@ exports.like = async function(req, res) {
 
 exports.unlike = async function(req, res) {
     var commentId = parseInt(req.params.id);
-    var userId = req.body['userId'];
+    var UserId = req.user.id;
 
     var comment = await models.Comments.findByPk(commentId);
     var incident = await models.Incidents.findByPk(comment['IncidentId']);
     var contractAddr = incident['contract'];
 
     models.Likes.destroy({
-        where: {CommentId: commentId, userId: userId}
+        where: {CommentId: commentId, UserId: UserId}
     })
     .then((result) => { res.json(result); })
     .catch(console.log);
@@ -130,13 +133,13 @@ exports.unlike = async function(req, res) {
     jobQueue.addJobUnlike(contractAddr, comment['commentIndex']);
 };
 
-async function getLikeInfo(userId, comments) {
+async function getLikeInfo(UserId, comments) {
     var commentList = JSON.parse(JSON.stringify(comments));
     for(var i in commentList) {
         likesList = JSON.parse(JSON.stringify(commentList[i]['Likes']));
         commentList[i]['totalLike'] = commentList[i]['Likes'].length;      
         var mylike = likesList.filter(function (item) {
-            return item.userId === userId;
+            return item.UserId === UserId;
         });
         commentList[i]['like'] = mylike.length ? true:false;
     };

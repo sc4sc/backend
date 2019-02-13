@@ -6,9 +6,6 @@ module.exports = function(sequelize, DataTypes) {
       contract: {
         type: DataTypes.TEXT, 
         allowNull: true},
-      userId: {
-        type: DataTypes.TEXT, 
-        allowNull: false},
       lat: {
         type: DataTypes.TEXT, 
         allowNull:false},

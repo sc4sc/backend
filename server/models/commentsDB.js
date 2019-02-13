@@ -4,9 +4,6 @@ module.exports = function(sequelize, DataTypes) {
     content: {
       type: DataTypes.STRING, 
       allowNull: false},
-    userId: {
-      type: DataTypes.TEXT, 
-      allowNull: false},
     commentIndex: {
       type: DataTypes.INTEGER,
       allowNull: false},
