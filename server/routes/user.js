@@ -27,6 +27,14 @@ exports.login = async function(req, res) {
 
 };
 
+exports.logout = function(req, res) {
+    models.Users.destroy({
+        where: {id: req.user.id}
+    })
+    .then((result) => { res.json(result); })
+    .catch(console.log);
+};
+
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
 passport.use(new BearerStrategy(
     (token, done) => {
@@ -38,10 +46,11 @@ passport.use(new BearerStrategy(
         .then(client => { 
             client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
                 if (err) {
-                    done(err);
-                    return;
+                    return done(err);
                 }
-                console.log(err, result);
+                if (err===null && result.return===null) {
+                    return done( new Error('SSO return null'));
+                }
 
                 //TODO : isAdmin 확인하기 (안전팀 부서코드)
                 const user = await models.Users.findOrCreate({
