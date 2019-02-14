@@ -10,7 +10,7 @@ const models = require('../models');
 const {caver, incidents, incident} = require('../library/caver');
 
 const secret = process.env.SECRET;
-const expiresIn = "1d"; 
+const expiresIn = 0; 
 
 // Create jwt using existing token
 exports.login = async function(req, res) {
@@ -87,6 +87,7 @@ passport.use(new BearerStrategy(
 passport.use(new JwtStrategy(
     {
         secretOrKey: secret,
+        ignoreExpiration: true,
         jwtFromRequest: fromAuthHeaderWithScheme('jwt')
     },
     (jwt_payload, done) => {
