@@ -4,21 +4,23 @@ const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
-    var UserId = req.user.id;
     var lat = req.body['lat'];
     var lng = req.body['lng'];
     var type = req.body['type'];
 
     var newIncident = await models.Incidents.create(
-        {type: type, UserId: UserId, lat: lat, lng: lng});
+        {type: type, UserId: req.user.id, lat: lat, lng: lng});
     res.json(newIncident);
+
+    var user = await models.Users.findByPk(req.user.id);
+    var userName = user['displayname'];
     
-    jobQueue.addJobIncident(JSON.stringify(req.body), newIncident['id']);
+    jobQueue.addJobIncident(JSON.stringify({user: userName, content: req.body}), newIncident['id']);
 
     models.Users.findAll({
         where: {
             id: {
-                [Op.ne]: UserId 
+                [Op.ne]: req.user.id 
             }
         },
         attributes: ['expotoken']
@@ -29,7 +31,6 @@ exports.report =  async function(req, res) {
         for(var i in expoTokenList){
             pushTokenList[i] = expoTokenList[i]['expotoken'];
         }
-        console.log("pueshTokenList: "+pushTokenList);
         expo.push(type, pushTokenList);
     })
     .catch(console.log);

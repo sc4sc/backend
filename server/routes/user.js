@@ -35,6 +35,12 @@ exports.logout = function(req, res) {
     .catch(console.log);
 };
 
+exports.profile = function(req, res) {
+    models.Users.findByPk(req.user.id)
+    .then((result) => { res.json(result); })
+    .catch(console.log);
+};
+
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
 passport.use(new BearerStrategy(
     (token, done) => {

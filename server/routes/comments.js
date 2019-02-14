@@ -21,7 +21,10 @@ exports.writeComment = async function(req, res) {
     .then((result) => { res.json(result); })
     .catch(console.log);
 
-    jobQueue.addJobComment(contractAddr, JSON.stringify(req.body));
+    var user = await models.Users.findByPk(req.user.id);
+    var userName = user['displayname'];
+
+    jobQueue.addJobComment(contractAddr, JSON.stringify({ user: userName, content: req.body['content']}));
 };
 
 exports.commentList = async function(req, res) {
