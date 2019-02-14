@@ -28,6 +28,9 @@ router.post('/comments/:id/unlike', route_comment.unlike);
 router.post('/incidents/:id/progresses', route_progress.writeProgress);
 router.get('/incidents/:id/progresses', route_progress.progressList);
 
+//user
+router.post('./logout', route_user.logout);
+
 //search
 router.get('/search', route_search.search);
 
