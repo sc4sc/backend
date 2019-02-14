@@ -38,10 +38,11 @@ passport.use(new BearerStrategy(
         .then(client => { 
             client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
                 if (err) {
-                    done(err);
-                    return;
+                    return done(err);
                 }
-                console.log(err, result);
+                if (err===null && result.return===null) {
+                    return done( new Error('SSO return null'));
+                }
 
                 //TODO : isAdmin 확인하기 (안전팀 부서코드)
                 const user = await models.Users.findOrCreate({
