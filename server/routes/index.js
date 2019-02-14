@@ -30,6 +30,7 @@ router.get('/incidents/:id/progresses', route_progress.progressList);
 
 //user
 router.post('/logout', route_user.logout);
+router.get('/profile', route_user.profile);
 
 //search
 router.get('/search', route_search.search);
