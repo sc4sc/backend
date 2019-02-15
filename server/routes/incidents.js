@@ -72,7 +72,8 @@ exports.incidentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
+                { model: models.Users } 
             ],
         })
         .then((result) => {res.json(result)})
@@ -88,7 +89,8 @@ exports.incidentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
+                { model: models.Users } 
             ],
         })
         .then((result) => {res.json(result)})
@@ -99,7 +101,8 @@ exports.incidentList = async function(req, res) {
             order: [[sortBy, order]],
             limit: size,
             include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1}
+                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
+                { model: models.Users } 
             ],
         })
         .then((result) => {res.json(result)})
