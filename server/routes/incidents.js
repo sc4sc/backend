@@ -7,6 +7,7 @@ exports.report =  async function(req, res) {
     var lat = req.body['lat'];
     var lng = req.body['lng'];
     var type = req.body['type'];
+    var building = req.body['building'];
 
     var newIncident = await models.Incidents.create(
         {type: type, UserId: req.user.id, lat: lat, lng: lng});
@@ -31,7 +32,7 @@ exports.report =  async function(req, res) {
         for(var i in expoTokenList){
             pushTokenList[i] = expoTokenList[i]['expotoken'];
         }
-        expo.push(type, pushTokenList);
+        expo.push(type, building, pushTokenList);
     })
     .catch(console.log);
 
