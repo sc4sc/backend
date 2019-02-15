@@ -110,7 +110,10 @@ exports.incidentList = async function(req, res) {
 exports.readIncident = function(req, res) {
     var incidentId = req.params.id;
 
-    models.Incidents.findByPk(incidentId)
+    models.Incidents.findByPk(
+        incidentId,
+        {include: [{model: models.Users}]}
+    )
     .then((result) => { res.json(result); })
     .catch(console.log);
 };
