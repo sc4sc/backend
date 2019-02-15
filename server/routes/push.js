@@ -53,7 +53,7 @@ async function checkAlarmResult(tickets) {
     })();
 }
 
-exports.push = function(title, pushTokenList) {
+exports.push = function(title, building, pushTokenList) {
 
     // Create the messages that you want to send to clents
     var messages = [];
@@ -70,7 +70,8 @@ exports.push = function(title, pushTokenList) {
         messages.push({
             to: pushToken,
             sound: 'default',
-            title: title
+            title: title,
+            body: building,
         });
     };
 

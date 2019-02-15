@@ -37,7 +37,13 @@ exports.logout = function(req, res) {
 
 exports.profile = function(req, res) {
     models.Users.findByPk(req.user.id)
-    .then((result) => { res.json(result); })
+    .then((result) => { 
+        if (result) {
+            res.json(result);
+        } else {
+            res.send(new Error('please Login'));
+        }
+    })
     .catch(console.log);
 };
 
