@@ -8,6 +8,7 @@ var config = {
     db.Users.hasMany(db.Comments);
     db.Users.hasMany(db.Likes);
 
+    db.Incidents.belongsTo(db.Users);
     db.Comments.belongsTo(db.Users);
   }
 };
