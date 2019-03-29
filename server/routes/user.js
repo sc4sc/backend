@@ -65,6 +65,11 @@ passport.use(new BearerStrategy(
                 }
 
                 //TODO : isAdmin 확인하기 (안전팀 부서코드)
+                const isAdmin = false;
+                if (result.return.ku_kaist_org_id === '3502') {
+                    const isAdmin = true;
+                }
+
                 const user = await models.Users.findOrCreate({
                     where: {kaist_uid: result.return.kaist_uid}, 
                     defaults: {
@@ -72,6 +77,7 @@ passport.use(new BearerStrategy(
                         ku_kname: result.return.ku_kname,
                         ku_kaist_org_id: result.return.ku_kaist_org_id,
                         mobile: result.return.mobile,
+                        isAdmin: isAdmin,
                     }
                 });
              
