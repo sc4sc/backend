@@ -65,9 +65,9 @@ passport.use(new BearerStrategy(
                 }
 
                 //TODO : isAdmin 확인하기 (안전팀 부서코드)
-                const isAdmin = false;
+                var isAdmin = false;
                 if (result.return.ku_kaist_org_id === '3502') {
-                    const isAdmin = true;
+                    isAdmin = true;
                 }
 
                 const user = await models.Users.findOrCreate({
