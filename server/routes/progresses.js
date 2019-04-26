@@ -5,18 +5,16 @@ const Op = models.Sequelize.Op;
 exports.writeProgress =  async function(req, res) {
     var incidentId = parseInt(req.params.id);
 
-    var result = await models.Incidents.findByPk(incidentId);
-    var incident = JSON.parse(JSON.stringify(result));
-    var contractAddr = incident['contract'];
-
     models.Progresses.create({
         content: req.body['content'],
         IncidentId: incidentId
     })
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Write progress Fail'));
+    });
 
-    jobQueue.addJobProgress(contractAddr, JSON.stringify(req.body));
+    jobQueue.addJobProgress(incidentId, JSON.stringify(req.body));
 };
 
 exports.progressList = function(req, res) {
@@ -39,7 +37,9 @@ exports.progressList = function(req, res) {
             limit: size
         })
         .then((progresses) => { res.json(progresses); })
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get progress list Fail'));
+        });
     } else if (after) {
         models.Progresses.findAll({
             where: {
@@ -52,7 +52,9 @@ exports.progressList = function(req, res) {
             limit: size
         })
         .then((progresses) => { res.json(progresses); })
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get progress list Fail'));
+        });
     } else {
         models.Progresses.findAll({
             where: {IncidentId: incidentId},
@@ -60,6 +62,8 @@ exports.progressList = function(req, res) {
             limit: size
         })
         .then((progresses) => { res.json(progresses); })
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get progress list Fail'));
+        });
     }
 };

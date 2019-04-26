@@ -29,160 +29,212 @@ module.exports.deployIncident = function(content, incidentId, done) {
                 {contract: instance._address},
                 {where: {id: incidentId}})
             .then(done())
-            .catch(console.log);
+            .catch((error) => {
+                console.log(error);
+                done(new Error("Update incidentDB error"));
+            });
         })
-        .catch(console.log);
+        .catch((error) => {
+            console.log(error);
+            done(new Error("Deploy error"));
+        });
     });
 };
 
-module.exports.sendState = function(contractAddr, newState, done) {
+module.exports.sendState = async function(incidentId, newState, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.changeState(newState)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']);
-            done();
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.changeState(newState)
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']);
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("like call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("like call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+
+    } catch (e) {
+        done(new Error("Find contract address error"));
+    }
 };
 
-module.exports.addComment = function(contractAddr, content, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+module.exports.addComment = async function(incidentId, content, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.addComment(content)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']);
-            done();
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
+
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.addComment(content)
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']);
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("addComment call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("addComment call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+    } catch (e) {
+        done(new Error("Find contract address error"));
+    }
+    
 
 }
 
-module.exports.addReply = function(contractAddr, commentIndex, content, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+module.exports.addReply = async function(incidentId, commentIndex, content, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.addReply(commentIndex, content)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']);
-            done();
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
+
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.addReply(commentIndex, content)
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']);
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("addReply call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("addReply call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+    } catch (e) {
+        done(new Error("Find contract address error"));
+    }
 }
 
-module.exports.sendlike = function(contractAddr, commentIndex, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+module.exports.sendlike = async function(incidentId, commentIndex, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.like(parseInt(commentIndex))
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']);
-            done();
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
+
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.like(parseInt(commentIndex))
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']);
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("like call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("like call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+    } catch(e) {
+        done(new Error("Find contract address error"));
+    }
+    
 }
 
-module.exports.sendUnlike = function(contractAddr, commentIndex, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+module.exports.sendUnlike = async function(incidentId, commentIndex, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.unlike(parseInt(commentIndex))
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']); 
-            done();
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
+
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.unlike(parseInt(commentIndex))
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']); 
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("unlike call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("unlike call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+    } catch(e) {
+        done(new Error("Find contract address error"));
+    }
+    
 }
 
-module.exports.addProgress = function(contractAddr, content, done) {
-    var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
-    incidentContract.options.address = keystore['address'];
+module.exports.addProgress = async function(incidentId, content, done) {
+    try {
+        var incident = await models.Incidents.findByPk(incidentId);
+        var contractAddr = incident['contract'];
 
-    caver.klay.unlockAccount(keystore['address'], password)
-    .then(() => {
-        incidentContract.methods.addProgress(content)
-        .send({
-            from: keystore['address'],
-            gasPrice: 0, gas: 999999999999 })
-        .then(()=>{ 
-            caver.klay.lockAccount(keystore['address']); 
-            done();
+        var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract.options.address = keystore['address'];
+
+        caver.klay.unlockAccount(keystore['address'], password)
+        .then(() => {
+            incidentContract.methods.addProgress(content)
+            .send({
+                from: keystore['address'],
+                gasPrice: 0, gas: 999999999999 })
+            .then(()=>{ 
+                caver.klay.lockAccount(keystore['address']); 
+                done();
+            })
+            .catch((error) => {
+                console.log(error);
+                done(new Error("addComment call error"));
+            });
         })
         .catch((error) => {
             console.log(error);
-            done(new Error("addComment call error"));
+            done(new Error("unlock error"));
         });
-    })
-    .catch((error) => {
-        console.log(error);
-        done(new Error("unlock error"));
-    });
+    } catch (e) {
+        done(new Error("Find contract address error"));
+    }
+    
 }

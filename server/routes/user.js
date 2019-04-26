@@ -31,7 +31,24 @@ exports.logout = function(req, res) {
         where: {id: req.user.id}
     })
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Logout Fail'));
+    });
+};
+
+exports.updatePushToken = function(req, res) {
+    models.Users.update(
+        {expotoken: req.body['expotoken']},
+        {where: {id: req.user.id}, returning: true})
+    .then((result) => { 
+        if (result[0] ===1 )
+            res.json({"success": true});
+        else 
+            res.send(new Error('Update PushToken Fail'));
+    })
+    .catch(() => {
+        res.send(new Error('Update PushToken Fail'));
+    });
 };
 
 exports.profile = function(req, res) {
@@ -40,10 +57,12 @@ exports.profile = function(req, res) {
         if (result) {
             res.json(result);
         } else {
-            res.send(new Error('please Login'));
+            res.send(new Error('Invalid Token'));
         }
     })
-    .catch(console.log);
+    .catch( ()=> {
+        res.send(new Error('Get Profile Fail'));
+    });
 };
 
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
