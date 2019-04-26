@@ -3,16 +3,16 @@ const Caver = require('caver-js');
 const models = require('../models');
 const incidents = require('../../build/contracts/Incidents.json');
 
-const klaytn_url = process.env.KLAYTN_URL || 'http://127.0.0.1:8563';
+const klaytn_url = process.env.KLAYTN_URL; // || 'http://127.0.0.1:8563'
 const keyfile_path = process.env.KEYFILE_PATH || __dirname + '/../../docker/key';
 const password_path = process.env.PASSWORD_PATH || __dirname + '/../../docker/password';
 
-const caver = new Caver(klaytn_url);
-const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
+// const caver = new Caver(klaytn_url);
+// const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
 
-const keyfile = fs.readFileSync(keyfile_path, 'utf8');
-const password = fs.readFileSync(password_path, 'utf8');
-const keystore = caver.klay.accounts.decrypt(keyfile, password);
+// const keyfile = fs.readFileSync(keyfile_path, 'utf8');
+// const password = fs.readFileSync(password_path, 'utf8');
+// const keystore = caver.klay.accounts.decrypt(keyfile, password);
 
 module.exports.deployIncident = function(content, incidentId, done) {
     caver.klay.unlockAccount(keystore['address'], password)
@@ -36,6 +36,7 @@ module.exports.deployIncident = function(content, incidentId, done) {
 };
 
 module.exports.sendState = function(contractAddr, newState, done) {
+
     var incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
     incidentContract.options.address = keystore['address'];
 
