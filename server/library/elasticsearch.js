@@ -5,7 +5,7 @@ const elasticClient = elasticsearch.Client({
     apiVersion: "6.6"
 });
 const synonymFilePath = process.env.ELASTIC_SYNONYM_PATH || 'searchData/synonym.txt';
-const buildingsFilePath= process.env.ELASTIC_BUILDINGS_PATH || 'searchData/buildings.txt';
+const buildingsFilePath= process.env.ELASTIC_BUILDINGS_PATH || '../searchData/buildings.txt';
 const indexName = 'buildings';
 const docName = '_doc';
 const setBody = {

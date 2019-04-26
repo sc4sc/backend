@@ -34,7 +34,9 @@ exports.report =  async function(req, res) {
         }
         expo.push(type, building, pushTokenList);
     })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Report Fail'));
+    });
 
 };
 
@@ -47,12 +49,11 @@ exports.changeState = async function(req, res) {
         {where: {id: incidentId}}
     )
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Change state Fail'));
+    });    
 
-    var incident = await models.Incidents.findByPk(incidentId);
-    var contractAddr = incident['contract'];        
-
-    jobQueue.addJobState(contractAddr, newState);
+    jobQueue.addJobState(incidentId, newState);
 }
 
 exports.incidentList = async function(req, res) {
@@ -77,7 +78,9 @@ exports.incidentList = async function(req, res) {
             ],
         })
         .then((result) => {res.json(result)})
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get incident list Fail'));
+        });
         
     } else if (after) {
         models.Incidents.findAll({
@@ -94,7 +97,9 @@ exports.incidentList = async function(req, res) {
             ],
         })
         .then((result) => {res.json(result)})
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get incident list Fail'));
+        });
         
     } else {
         models.Incidents.findAll({
@@ -106,7 +111,9 @@ exports.incidentList = async function(req, res) {
             ],
         })
         .then((result) => {res.json(result)})
-        .catch(console.log);
+        .catch(() => {
+            res.send(new Error('Get incident list Fail'));
+        });
     }
 };
 
@@ -118,5 +125,7 @@ exports.readIncident = function(req, res) {
         {include: [{model: models.Users}]}
     )
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Read incident Fail'));
+    });
 };

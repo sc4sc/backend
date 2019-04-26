@@ -4,27 +4,24 @@ const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
     var incidentId = parseInt(req.params.id);
-    
-    var result = await models.Incidents.findByPk(incidentId);
-    var incident = JSON.parse(JSON.stringify(result));
-    var contractAddr = incident['contract'];
 
     var comments = await models.Comments.findAll({where: {IncidentId: incidentId}});
     var commentIndex = comments.length + 1;
     
-    models.Comments.create({
+    var result = await models.Comments.create({
         content: req.body['content'], 
         UserId: req.user.id, 
         IncidentId: incidentId,
         commentIndex: commentIndex,
     })
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Write comment Fail'));
+    });
 
     var user = await models.Users.findByPk(req.user.id);
     var userName = user['displayname'];
-
-    jobQueue.addJobComment(contractAddr, JSON.stringify({ user: userName, content: req.body['content']}));
+    jobQueue.addJobComment(incidentId, JSON.stringify({ user: userName, content: req.body['content']}));
 };
 
 exports.commentList = async function(req, res) {
@@ -85,55 +82,52 @@ exports.commentList = async function(req, res) {
 exports.writeReply = async function(req, res) {
     var commentId = req.params.id;
     var UserId = req.user.id;
-    var content = req.body['content'];
-
-    var comment = await models.Comments.findByPk(commentId);
-    var incident = await models.Incidents.findByPk(comment['IncidentId']);
-    var contractAddr = incident['contract'];        
+    var content = req.body['content'];   
     
     models.Comments.update(
         {reply: content},
         {where: {id: commentId}}
     )
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Write reply Fail'));
+    });
 
-    jobQueue.addJobReply(contractAddr, comment['commentIndex'], JSON.stringify(req.body));
+    var comment = await models.Comments.findByPk(commentId);   
+    jobQueue.addJobReply(comment['incidentId'], comment['commentIndex'], JSON.stringify(req.body));
 };
 
 exports.like = async function(req, res) {
     var commentId = parseInt(req.params.id);
     var UserId = req.user.id;
-
-    var comment = await models.Comments.findByPk(commentId);
-    var incident = await models.Incidents.findByPk(comment['IncidentId']);
-    var contractAddr = incident['contract'];
     
     models.Likes.create({
         CommentId: commentId, 
         UserId: UserId
     })
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Like Fail'));
+    });
 
-    jobQueue.addJobLike(contractAddr, comment['commentIndex']);
+    var comment = await models.Comments.findByPk(commentId);
+    jobQueue.addJobLike(comment['IncidentId'], comment['commentIndex']);
 };
 
 exports.unlike = async function(req, res) {
     var commentId = parseInt(req.params.id);
     var UserId = req.user.id;
-
-    var comment = await models.Comments.findByPk(commentId);
-    var incident = await models.Incidents.findByPk(comment['IncidentId']);
-    var contractAddr = incident['contract'];
-
+    
     models.Likes.destroy({
         where: {CommentId: commentId, UserId: UserId}
     })
     .then((result) => { res.json(result); })
-    .catch(console.log);
+    .catch(() => {
+        res.send(new Error('Unlike Fail'));
+    });
 
-    jobQueue.addJobUnlike(contractAddr, comment['commentIndex']);
+    var comment = await models.Comments.findByPk(commentId);
+    jobQueue.addJobUnlike(comment['IncidentId'], comment['commentIndex']);
 };
 
 async function getLikeInfo(UserId, comments) {
