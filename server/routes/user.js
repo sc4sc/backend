@@ -33,7 +33,7 @@ exports.logout = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Logout Fail'));
+        res.status(400).json({"type": "Invalid_ID", "message": "Logout Fail"});
     });
 };
 
@@ -44,11 +44,11 @@ exports.updatePushToken = function(req, res) {
     .then((result) => { 
         if (result[0] ===1 )
             res.json({"success": true});
-        else 
-            res.send(new Error('Update PushToken Fail'));
+        else
+            res.status(400).json({"type": "Invalid_ID", "message": 'Update PushToken Fail'});
     })
     .catch(() => {
-        res.send(new Error('Update PushToken Fail'));
+        res.status(400).json({"type": "Invalid_ID", "message": 'Update PushToken Fail'});
     });
 };
 
@@ -58,11 +58,11 @@ exports.profile = function(req, res) {
         if (result) {
             res.json(result);
         } else {
-            res.send(new Error('Invalid Token'));
+            res.status(400).json({"type": "Invalid_ID", "message": 'Get profile Fail'});
         }
     })
     .catch( ()=> {
-        res.send(new Error('Get Profile Fail'));
+        res.status(400).json({"type": "Invalid_ID", "message": 'Get profile Fail'});
     });
 };
 
