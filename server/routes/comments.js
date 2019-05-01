@@ -16,7 +16,7 @@ exports.writeComment = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Write comment Fail'));
+        res.status(400).json({"type": "Invalid_Model", "message": 'Write comment Fail'});
     });
 
     var user = await models.Users.findByPk(req.user.id);
@@ -90,7 +90,7 @@ exports.writeReply = async function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Write reply Fail'));
+        res.status(400).json({"type": "Invalid_ID", "message": 'Write reply Fail'});
     });
 
     var comment = await models.Comments.findByPk(commentId);   
@@ -107,7 +107,7 @@ exports.like = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Like Fail'));
+        res.status(400).json({"type": "Invalid_Model", "message": 'Like Fail'});
     });
 
     var comment = await models.Comments.findByPk(commentId);
@@ -123,7 +123,7 @@ exports.unlike = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Unlike Fail'));
+        res.status(400).json({"type": "Invalid_ID", "message": 'Unlike Fail'});
     });
 
     var comment = await models.Comments.findByPk(commentId);
