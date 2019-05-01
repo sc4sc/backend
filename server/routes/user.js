@@ -27,9 +27,10 @@ exports.login = async function(req, res) {
 };
 
 exports.logout = function(req, res) {
-    models.Users.destroy({
-        where: {id: req.user.id}
-    })
+    models.Users.update(
+        {expotoken: null},
+        {where: {id: req.user.id}}
+    )
     .then((result) => { res.json(result); })
     .catch(() => {
         res.send(new Error('Logout Fail'));

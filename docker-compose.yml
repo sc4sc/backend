@@ -19,7 +19,7 @@ services:
       KEYFILE_PATH: /sc4sc/klaytn/rn/data/keystore/key
       PASSWORD_PATH: /sc4sc/klaytn/rn/data/keystore/password
       SECRET: 123123
-    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; /run.sh'
+    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; node /sc4sc/backend/server/app.js'
   redis:
     image: redis
   db:
