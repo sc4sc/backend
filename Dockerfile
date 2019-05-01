@@ -3,9 +3,9 @@ FROM node:latest
 WORKDIR /sc4sc
 
 # Speeding up by caching node_modules
-ADD ./backend/package.json ./backend/package.json
-RUN cd ./backend && npm install
-COPY ./backend ./backend
+ADD ./package.json ./backend/package.json
+RUN cd ./ && npm install
+COPY ./ ./backend
 
 #ADD *.sh Dockerfile ./
 
