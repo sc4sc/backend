@@ -7,7 +7,6 @@ const JwtStrategy = passportJwt.Strategy;
 const fromAuthHeaderWithScheme = passportJwt.ExtractJwt.fromAuthHeaderWithScheme;
 
 const models = require('../models');
-const {caver, incidents, incident} = require('../library/caver');
 
 const secret = process.env.SECRET;
 const expiresIn = 0; 

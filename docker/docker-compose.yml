@@ -4,13 +4,11 @@ services:
     image: sc4sc:prototype
     ports: 
       - "8000:8000"
-      - "443:443"
     volumes:
       - ./https:/sc4sc/https
     depends_on:
       - db
       - redis
-      - elasticsearch
     environment:
       NODE_ENV: production
       ELASTIC_URL: elasticsearch:9200
@@ -20,14 +18,8 @@ services:
       POSTGRES_URL: postgres://root:password@db:5432/database_production
       KEYFILE_PATH: /sc4sc/klaytn/rn/data/keystore/key
       PASSWORD_PATH: /sc4sc/klaytn/rn/data/keystore/password
-      ENABLE_HTTPS: 1
-      HTTPS_KEY_PATH: /sc4sc/https/key.pem
-      HTTPS_CERT_PATH: /sc4sc/https/cert.pem
-    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379 || !</dev/tcp/elasticsearch/9200; do sleep 1; done; ./run_app_with_blockchain.sh'
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.0
-    volumes:
-      - ./searchData:/usr/share/elasticsearch/config/searchData
+      SECRET: 123123
+    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; /run.sh'
   redis:
     image: redis
   db:
