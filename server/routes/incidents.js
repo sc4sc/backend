@@ -35,7 +35,7 @@ exports.report =  async function(req, res) {
         expo.push(type, building, pushTokenList);
     })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_Token", "message": 'Report Broadcast Fail'});
+        res.send(new Error('Report Fail'));
     });
 
 };
@@ -50,7 +50,7 @@ exports.changeState = async function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_ID", "message": 'Change state Fail'});
+        res.send(new Error('Change state Fail'));
     });    
 
     jobQueue.addJobState(incidentId, newState);
@@ -79,7 +79,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.status(400).json({"type": "Invalid_Include", "message": 'Get incident list Fail'});
+            res.send(new Error('Get incident list Fail'));
         });
         
     } else if (after) {
@@ -98,7 +98,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.status(400).json({"type": "Invalid_Include", "message": 'Get incident list Fail'});
+            res.send(new Error('Get incident list Fail'));
         });
         
     } else {
@@ -112,7 +112,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.status(400).json({"type": "Invalid_Include", "message": 'Get incident list Fail'});
+            res.send(new Error('Get incident list Fail'));
         });
     }
 };
@@ -126,6 +126,6 @@ exports.readIncident = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_ID", "message": 'Read incident Fail'});
+        res.send(new Error('Read incident Fail'));
     });
 };

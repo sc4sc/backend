@@ -11,7 +11,7 @@ exports.writeProgress =  async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_ID", "message": 'Write progress Fail'});
+        res.send(new Error('Write progress Fail'));
     });
 
     jobQueue.addJobProgress(incidentId, JSON.stringify(req.body));
@@ -38,7 +38,7 @@ exports.progressList = function(req, res) {
         })
         .then((progresses) => { res.json(progresses); })
         .catch(() => {
-            res.status(400).json({"type": "Invalid_ID", "message": 'Get progress list Fail'});
+            res.send(new Error('Get progress list Fail'));
         });
     } else if (after) {
         models.Progresses.findAll({
@@ -53,7 +53,7 @@ exports.progressList = function(req, res) {
         })
         .then((progresses) => { res.json(progresses); })
         .catch(() => {
-            res.status(400).json({"type": "Invalid_ID", "message": 'Get progress list Fail'});
+            res.send(new Error('Get progress list Fail'));
         });
     } else {
         models.Progresses.findAll({
@@ -63,7 +63,7 @@ exports.progressList = function(req, res) {
         })
         .then((progresses) => { res.json(progresses); })
         .catch(() => {
-            res.status(400).json({"type": "Invalid_ID", "message": 'Get progress list Fail'});
+            res.send(new Error('Get progress list Fail'));
         });
     }
 };
