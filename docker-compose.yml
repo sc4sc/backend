@@ -3,7 +3,7 @@ services:
   sc4sc: 
     image: sc4sc:prototype
     ports: 
-      - "8000:8000"
+      - "12422:8000"
     depends_on:
       - db
       - redis
@@ -11,6 +11,7 @@ services:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
       POSTGRES_URL: postgres://root:password@db:5432/database_production
+      # Change two keys in production
       SECRET: 123123
       PRIVKEY: temp
     command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; node /backend/server/app.js'
