@@ -12,6 +12,12 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 app.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
+
+//health check
+app.get('/health', (req, res) => {
+  res.send("OK");
+});
+
 app.use('/',require('./routes'));
 
 models.sequelize.sync()
