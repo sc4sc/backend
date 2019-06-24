@@ -13,17 +13,19 @@ const expiresIn = 0;
 
 // Create jwt using existing token
 exports.login = async function(req, res) {
+    try {
+        const update = await models.Users.update(
+            {expotoken: req.body['expotoken']},
+            {where: {id: req.user.id}});
+        
+        const user = await models.Users.findByPk(req.user.id);
 
-    const update = await models.Users.update(
-        {expotoken: req.body['expotoken']},
-        {where: {id: req.user.id}});
-    
-    const user = await models.Users.findByPk(req.user.id);
-
-    res.json({ appToken: req.user.appToken, displayname: user['displayname'],
-        ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
-        ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
-
+        res.json({ appToken: req.user.appToken, displayname: user['displayname'],
+            ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
+            ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
+    } catch (e) {
+        res.send(new Error('[login] FAIL'));
+    }
 };
 
 exports.logout = function(req, res) {
@@ -33,7 +35,7 @@ exports.logout = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Logout Fail'));
+        res.send(new Error('[logout] DB update FAIL'));
     });
 };
 
@@ -45,24 +47,21 @@ exports.updatePushToken = function(req, res) {
         if (result[0] ===1 )
             res.json({"success": true});
         else 
-            res.send(new Error('Update PushToken Fail'));
+            res.send(new Error('[updatePushToken] DB update Fail'));
     })
     .catch(() => {
-        res.send(new Error('Update PushToken Fail'));
+        res.send(new Error('[updatePushToken] DB update Fail'));
     });
 };
 
 exports.profile = function(req, res) {
     models.Users.findByPk(req.user.id)
     .then((result) => { 
-        if (result) {
-            res.json(result);
-        } else {
-            res.send(new Error('Invalid Token'));
-        }
+        if (result) res.json(result);
+        else res.send(new Error('[profile] DB findByPk Fail'));
     })
-    .catch( ()=> {
-        res.send(new Error('Get Profile Fail'));
+    .catch((e)=> {
+        res.send(new Error('[profile] DB findByPk Fail'));
     });
 };
 
@@ -88,12 +87,13 @@ passport.use(new BearerStrategy(
             });
 
             while (retry) {
+                console.log(retry);
                 info = await verification;   
                 if (info == null) retry--;
                 else retry = 0;
             }
                         
-            if (info == null) done(new Error('SSO return null'));
+            if (info == null) return done(new Error('[passport] SSO FAIL'));
 
             if (info.ku_kaist_org_id === '3502') isAdmin = true;
             const user = await models.Users.findOrCreate({
@@ -117,7 +117,7 @@ passport.use(new BearerStrategy(
 
         } catch (e) {
             console.log(e);
-            return done(new Error("JWT token fail."));
+            return done(new Error("[passport] JWT token FAIL"));
         }
     }
 ));

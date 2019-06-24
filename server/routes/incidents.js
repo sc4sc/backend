@@ -9,14 +9,18 @@ exports.report =  async function(req, res) {
     var type = req.body['type'];
     var building = req.body['building'];
 
-    var newIncident = await models.Incidents.create(
-        {type: type, UserId: req.user.id, lat: lat, lng: lng});
-    res.json(newIncident);
+    try {
+        var newIncident = await models.Incidents.create(
+            {type: type, UserId: req.user.id, lat: lat, lng: lng});
+        res.json(newIncident);
 
-    var user = await models.Users.findByPk(req.user.id);
-    var userName = user['displayname'];
-    
-    jobQueue.addJobIncident(JSON.stringify({user: userName, content: req.body}), newIncident['id']);
+        var user = await models.Users.findByPk(req.user.id);
+        var userName = user['displayname'];
+        
+        jobQueue.addJobIncident(JSON.stringify({user: userName, content: req.body}), newIncident['id']);
+    } catch (e) {
+        res.send(new Error("[report] FAIL"));
+    }
 
     models.Users.findAll({
         where: {
@@ -35,7 +39,7 @@ exports.report =  async function(req, res) {
         expo.push(type, building, pushTokenList);
     })
     .catch(() => {
-        res.send(new Error('Report Fail'));
+        res.send(new Error('[report] DB findAll FAIL'));
     });
 
 };
@@ -50,7 +54,7 @@ exports.changeState = async function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Change state Fail'));
+        res.send(new Error('[changeState] DB update FAIL'));
     });    
 
     jobQueue.addJobState(incidentId, newState);
@@ -79,7 +83,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('Get incident list Fail'));
+            res.send(new Error('[incidentList] DB findAll FAIL'));
         });
         
     } else if (after) {
@@ -98,7 +102,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('Get incident list Fail'));
+            res.send(new Error('[incidentList] DB findAll FAIL'));
         });
         
     } else {
@@ -112,7 +116,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('Get incident list Fail'));
+            res.send(new Error('[incidentList] DB findAll FAIL'));
         });
     }
 };
@@ -126,6 +130,6 @@ exports.readIncident = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('Read incident Fail'));
+        res.send(new Error('[readIncident] DB findByPk FAIL'));
     });
 };
