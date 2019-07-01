@@ -5,10 +5,10 @@ const Op = models.Sequelize.Op;
 exports.writeComment = async function(req, res) {
     var incidentId = parseInt(req.params.id);
     try {
-        var comments = await models.Comments.findAll({where: {IncidentId: incidentId}});
+        var comments = await models.Comments.findAll ({where: {IncidentId: incidentId}});
         var commentIndex = comments.length + 1;
         
-        var result = models.Comments.create({
+        var result = models.Comments.create ({
             content: req.body['content'], 
             UserId: req.user.id, 
             IncidentId: incidentId,
@@ -16,14 +16,14 @@ exports.writeComment = async function(req, res) {
         })
         .then((result) => { res.json(result); })
         .catch(() => {
-            res.send(new Error('[WriteComment] DB create FAIL'));
+            res.status(400).send(new Error('[WriteComment] DB create FAIL'));
         });
 
         var user = await models.Users.findByPk(req.user.id);
         var userName = user['displayname'];
-        jobQueue.addJobComment(incidentId, JSON.stringify({ user: userName, content: req.body['content']}));
+        jobQueue.addJobComment(incidentId, JSON.stringify ({ user: userName, content: req.body['content']}));
     } catch (e) {
-        res.send(new Error('[WriteComment] FAIL'));
+        res.status(400).send(new Error('[WriteComment] FAIL'));
     }
 };
 
@@ -82,7 +82,7 @@ exports.commentList = async function(req, res) {
         const commentList = getLikeInfo(UserId, comments);
         res.json(commentList);
     } catch (e) {
-        res.send(new Error('[commentList] DB findAll FAIL'));
+        res.status(400).send(new Error('[commentList] DB findAll FAIL'));
     }
 };
 
@@ -97,13 +97,13 @@ exports.writeReply = async function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[WriteReply] DB update FAIL'));
+        res.status(400).send(new Error('[WriteReply] DB update FAIL'));
     });
 
     try {
         var comment = await models.Comments.findByPk(commentId);   
     } catch (e) {
-        res.send(new Error("[WriteReply] DB findByPk FAIL"));
+        res.status(400).send(new Error("[WriteReply] DB findByPk FAIL"));
     }
     jobQueue.addJobReply(comment['incidentId'], comment['commentIndex'], JSON.stringify(req.body));
 };
@@ -118,13 +118,13 @@ exports.like = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[like] DB create FAIL'));
+        res.status(400).send(new Error('[like] DB create FAIL'));
     });
 
     try {
         var comment = await models.Comments.findByPk(commentId);   
     } catch (e) {
-        res.send(new Error("[like] DB findByPk FAIL"));
+        res.status(400).send(new Error("[like] DB findByPk FAIL"));
     }
     jobQueue.addJobLike(comment['IncidentId'], comment['commentIndex']);
 };
@@ -138,13 +138,13 @@ exports.unlike = async function(req, res) {
     })
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[unlike] DB destroy Fail'));
+        res.status(400).send(new Error('[unlike] DB destroy Fail'));
     });
 
     try {
         var comment = await models.Comments.findByPk(commentId);   
     } catch (e) {
-        res.send(new Error("[unlike] DB findByPk FAIL"));
+        res.status(400).send(new Error("[unlike] DB findByPk FAIL"));
     }    
     jobQueue.addJobUnlike(comment['IncidentId'], comment['commentIndex']);
 };

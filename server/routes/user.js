@@ -24,7 +24,7 @@ exports.login = async function(req, res) {
             ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
             ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
     } catch (e) {
-        res.send(new Error('[login] FAIL'));
+        res.status(400).send(new Error('[login] FAIL'));
     }
 };
 
@@ -35,7 +35,7 @@ exports.logout = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[logout] DB update FAIL'));
+        res.status(400).send(new Error('[logout] DB update FAIL'));
     });
 };
 
@@ -47,10 +47,10 @@ exports.updatePushToken = function(req, res) {
         if (result[0] ===1 )
             res.json({"success": true});
         else 
-            res.send(new Error('[updatePushToken] DB update Fail'));
+            res.status(400).send(new Error('[updatePushToken] DB update Fail'));
     })
     .catch(() => {
-        res.send(new Error('[updatePushToken] DB update Fail'));
+        res.status(400).send(new Error('[updatePushToken] DB update Fail'));
     });
 };
 
@@ -58,10 +58,10 @@ exports.profile = function(req, res) {
     models.Users.findByPk(req.user.id)
     .then((result) => { 
         if (result) res.json(result);
-        else res.send(new Error('[profile] DB findByPk Fail'));
+        else res.status(400).send(new Error('[profile] DB findByPk Fail'));
     })
     .catch((e)=> {
-        res.send(new Error('[profile] DB findByPk Fail'));
+        res.status(400).send(new Error('[profile] DB findByPk Fail'));
     });
 };
 

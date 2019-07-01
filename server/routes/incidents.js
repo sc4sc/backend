@@ -19,7 +19,7 @@ exports.report =  async function(req, res) {
         
         jobQueue.addJobIncident(JSON.stringify({user: userName, content: req.body}), newIncident['id']);
     } catch (e) {
-        res.send(new Error("[report] FAIL"));
+        res.status(400).send(new Error("[report] FAIL"));
     }
 
     models.Users.findAll({
@@ -39,7 +39,7 @@ exports.report =  async function(req, res) {
         expo.push(type, building, pushTokenList);
     })
     .catch(() => {
-        res.send(new Error('[report] DB findAll FAIL'));
+        res.status(400).send(new Error('[report] DB findAll FAIL'));
     });
 
 };
@@ -54,7 +54,7 @@ exports.changeState = async function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[changeState] DB update FAIL'));
+        res.status(400).send(new Error('[changeState] DB update FAIL'));
     });    
 
     jobQueue.addJobState(incidentId, newState);
@@ -83,7 +83,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('[incidentList] DB findAll FAIL'));
+            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
         });
         
     } else if (after) {
@@ -102,7 +102,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('[incidentList] DB findAll FAIL'));
+            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
         });
         
     } else {
@@ -116,7 +116,7 @@ exports.incidentList = async function(req, res) {
         })
         .then((result) => {res.json(result)})
         .catch(() => {
-            res.send(new Error('[incidentList] DB findAll FAIL'));
+            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
         });
     }
 };
@@ -130,6 +130,6 @@ exports.readIncident = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.send(new Error('[readIncident] DB findByPk FAIL'));
+        res.status(400).send(new Error('[readIncident] DB findByPk FAIL'));
     });
 };
