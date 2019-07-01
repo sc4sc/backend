@@ -13,17 +13,19 @@ const expiresIn = 0;
 
 // Create jwt using existing token
 exports.login = async function(req, res) {
+    try {
+        const update = await models.Users.update(
+            {expotoken: req.body['expotoken']},
+            {where: {id: req.user.id}});
+        
+        const user = await models.Users.findByPk(req.user.id);
 
-    const update = await models.Users.update(
-        {expotoken: req.body['expotoken']},
-        {where: {id: req.user.id}});
-    
-    const user = await models.Users.findByPk(req.user.id);
-
-    res.json({ appToken: req.user.appToken, displayname: user['displayname'],
-        ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
-        ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
-
+        res.json({ appToken: req.user.appToken, displayname: user['displayname'],
+            ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
+            ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
+    } catch (e) {
+        res.status(400).send(new Error('[login] FAIL'));
+    }
 };
 
 exports.logout = function(req, res) {
@@ -33,7 +35,7 @@ exports.logout = function(req, res) {
     )
     .then((result) => { res.json(result); })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_ID", "message": "Logout Fail"});
+        res.status(400).send(new Error('[logout] DB update FAIL'));
     });
 };
 
@@ -44,73 +46,79 @@ exports.updatePushToken = function(req, res) {
     .then((result) => { 
         if (result[0] ===1 )
             res.json({"success": true});
-        else
-            res.status(400).json({"type": "Invalid_ID", "message": 'Update PushToken Fail'});
+        else 
+            res.status(400).send(new Error('[updatePushToken] DB update Fail'));
     })
     .catch(() => {
-        res.status(400).json({"type": "Invalid_ID", "message": 'Update PushToken Fail'});
+        res.status(400).send(new Error('[updatePushToken] DB update Fail'));
     });
 };
 
 exports.profile = function(req, res) {
     models.Users.findByPk(req.user.id)
     .then((result) => { 
-        if (result) {
-            res.json(result);
-        } else {
-            res.status(400).json({"type": "Invalid_ID", "message": 'Get profile Fail'});
-        }
+        if (result) res.json(result);
+        else res.status(400).send(new Error('[profile] DB findByPk Fail'));
     })
-    .catch( ()=> {
-        res.status(400).json({"type": "Invalid_ID", "message": 'Get profile Fail'});
+    .catch((e)=> {
+        res.status(400).send(new Error('[profile] DB findByPk Fail'));
     });
 };
 
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
 passport.use(new BearerStrategy(
-    (token, done) => {
+    async (token, done) => {
 
         const url = 'https://iam.kaist.ac.kr:443/iamps/services/appsingleauth?wsdl';
         const privkey = process.env.PRIVKEY;
         const args = {cookieValue: token, PrivateKeyStr: privkey, adminVO: {adminId: null, password: null}};
-        soap.createClientAsync(url)
-        .then(client => { 
-            client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
-                if (err) {
-                    return done(err);
-                }
-                if (err===null && result.return===null) {
-                    return done( new Error('SSO return null'));
-                }
+        var isAdmin = false;
+        var retry = 5;
+        var info = null;
 
-                //TODO : isAdmin 확인하기 (안전팀 부서코드)
-                var isAdmin = false;
-                if (result.return.ku_kaist_org_id === '3502') {
-                    isAdmin = true;
-                }
 
-                const user = await models.Users.findOrCreate({
-                    where: {kaist_uid: result.return.kaist_uid}, 
-                    defaults: {
-                        displayname: result.return.displayname, 
-                        ku_kname: result.return.ku_kname,
-                        ku_kaist_org_id: result.return.ku_kaist_org_id,
-                        mobile: result.return.mobile,
-                        isAdmin: isAdmin,
-                    }
+        try {
+            var client = await soap.createClientAsync(url);
+            var verification = new Promise (function( resolve, reject) {
+                client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
+                    if (err) reject (result.result);
+                    else resolve (result.return);
                 });
-             
-                const appToken = jwt.sign(
-                    { id: user[0]['id'] },
-                    secret,
-                    { expiresIn }
-                );
+            });
+
+            while (retry) {
+                console.log(retry);
+                info = await verification;   
+                if (info == null) retry--;
+                else retry = 0;
+            }
+                        
+            if (info == null) return done(new Error('[passport] SSO FAIL'));
+
+            if (info.ku_kaist_org_id === '3502') isAdmin = true;
+            const user = await models.Users.findOrCreate({
+                where: {kaist_uid: info.kaist_uid}, 
+                defaults: {
+                    displayname: info.displayname, 
+                    ku_kname: info.ku_kname,
+                    ku_kaist_org_id: info.ku_kaist_org_id,
+                    mobile: info.mobile,
+                    isAdmin: isAdmin,
+                }
+            });
         
-                done(null, { appToken: appToken, id: user[0]['id']});
-            
-            }); 
-        })
-        .catch((error)=>{ done(error); });
+            const appToken = jwt.sign(
+                { id: user[0]['id'] },
+                secret,
+                { expiresIn }
+            );
+        
+            done(null, { appToken: appToken, id: user[0]['id']});
+
+        } catch (e) {
+            console.log(e);
+            return done(new Error("[passport] JWT token FAIL"));
+        }
     }
 ));
 
