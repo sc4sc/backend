@@ -1,38 +1,41 @@
 const Queue = require('bull');
-const blockchain = require('./caver');
 
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 var queue = new Queue('blockchain', REDIS_URL);
 
 setQueue(queue);
 
-queue.process('deploy', function(job,done){
-    blockchain.deployIncident(job.data.content, job.data.id, done)
-});
+if (process.env.BLOCKCHAIN_ON === '1') {
+    const blockchain = require('./caver');
 
-queue.process('state', function(job,done){
-    blockchain.sendState(job.data.id, job.data.newState, done)
-});
+    queue.process('deploy', function(job,done){
+        blockchain.deployIncident(job.data.content, job.data.id, done)
+    });
 
-queue.process('comment', function(job,done){
-    blockchain.addComment(job.data.id, job.data.content, done)
-});
+    queue.process('state', function(job,done){
+        blockchain.sendState(job.data.id, job.data.newState, done)
+    });
 
-queue.process('reply', function(job,done){
-    blockchain.addReply(job.data.id, job.data.commentId, job.data.content, done)
-});
+    queue.process('comment', function(job,done){
+        blockchain.addComment(job.data.id, job.data.content, done)
+    });
 
-queue.process('like', function(job,done){
-    blockchain.sendlike(job.data.id, job.data.commentId, done)
-});
+    queue.process('reply', function(job,done){
+        blockchain.addReply(job.data.id, job.data.commentId, job.data.content, done)
+    });
 
-queue.process('unlike', function(job,done){
-    blockchain.sendUnlike(job.data.id, job.data.commentId, done)
-});
+    queue.process('like', function(job,done){
+        blockchain.sendlike(job.data.id, job.data.commentId, done)
+    });
 
-queue.process('progress', function(job,done){
-    blockchain.addProgress(job.data.id, job.data.content, done)
-});
+    queue.process('unlike', function(job,done){
+        blockchain.sendUnlike(job.data.id, job.data.commentId, done)
+    });
+
+    queue.process('progress', function(job,done){
+        blockchain.addProgress(job.data.id, job.data.content, done)
+    });
+}
 
 module.exports.addJobIncident = async function(content, id) {
     const job = await queue.add('deploy', { 
