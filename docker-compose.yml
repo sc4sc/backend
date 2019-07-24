@@ -11,6 +11,11 @@ services:
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
       POSTGRES_URL: postgres://root:password@db:5432/database_production
+      ACCOUNT_BUCKET: blockchain_account
+      ACCOUNT_KEY_PATH: key
+      ACCOUNT_PASSWORD_PATH: password_test
+      BLOCKCHAIN_ON: 0
+      KLAYTN_URL: 
       # Change two keys in production
       SECRET: 123123
       PRIVKEY: temp

@@ -4,7 +4,7 @@ const models = require('../models');
 const incidents = require('../../build/contracts/Incidents.json');
 const {Storage} = require('@google-cloud/storage');
 
-const klaytn_url = process.env.KLAYTN_URL || 'http://127.0.0.1:8563';
+const klaytn_url = process.env.KLAYTN_URL;
 const caver = new Caver(klaytn_url);
 const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
 
@@ -24,7 +24,7 @@ async function getAccount() {
 
 async function unlockAccount() {
     await getAccount();
-    return caver.klay.personal.unlockAccount(keystore['address'], password);
+    return caver.klay.unlockAccount(keystore['address'], password);
 }
 
 module.exports.deployIncident = async function(content, incidentId, done) {
@@ -54,11 +54,12 @@ module.exports.deployIncident = async function(content, incidentId, done) {
 };
 
 module.exports.sendState = async function(incidentId, newState, done) {
-        
+    let incidentContract;
+
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
@@ -79,11 +80,12 @@ module.exports.sendState = async function(incidentId, newState, done) {
 };
 
 module.exports.addComment = async function(incidentId, content, done) {
+    let incidentContract;
 
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
@@ -105,11 +107,12 @@ module.exports.addComment = async function(incidentId, content, done) {
 }
 
 module.exports.addReply = async function(incidentId, commentIndex, content, done) {
+    let incidentContract;
 
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
@@ -131,11 +134,12 @@ module.exports.addReply = async function(incidentId, commentIndex, content, done
 }
 
 module.exports.sendlike = async function(incidentId, commentIndex, done) {
-    
+    let incidentContract;
+
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
@@ -157,11 +161,12 @@ module.exports.sendlike = async function(incidentId, commentIndex, done) {
 }
 
 module.exports.sendUnlike = async function(incidentId, commentIndex, done) {
-    
+    let incidentContract;
+
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
@@ -183,11 +188,12 @@ module.exports.sendUnlike = async function(incidentId, commentIndex, done) {
 }
 
 module.exports.addProgress = async function(incidentId, content, done) {
-    
+    let incidentContract;
+
     models.Incidents.findByPk(incidentId)
     .then((incident) => {
         let contractAddr = incident['contract'];
-        let incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
+        incidentContract = new caver.klay.Contract(incidents.abi, contractAddr);
         incidentContract.options.address = keystore['address'];
         return unlockAccount();
     })
