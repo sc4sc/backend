@@ -11,14 +11,21 @@ const port = process.env.PORT || 8000;
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-app.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
+const rootRouter = express.Router();
 
+rootRouter.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
+
+const healthRoute = (req, res) => {
+  res.send("OK!");
+};
 //health check
-app.get('/health', (req, res) => {
-  res.send("OK");
-});
+rootRouter.get('/health', healthRoute);
 
-app.use('/',require('./routes'));
+const apiRouter = require('./routes');
+rootRouter.use('/', apiRouter);
+
+app.use('/api', rootRouter);
+app.use('/', rootRouter);
 
 models.sequelize.sync()
   .then(() => {
