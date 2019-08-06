@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^3.0.4",
     "bull": "^3.6.0",
     "caver-js": "0.0.2-f",
     "dotenv": "^6.2.0",
