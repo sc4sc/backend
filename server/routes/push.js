@@ -1,11 +1,4 @@
 const {Expo} = require('expo-server-sdk');
-const models = require('../models');
-
-const Caver = require('caver-js');
-const caver = new Caver('http://127.0.0.1:8563');
-const incidents = require('../../build/contracts/Incidents.json');
-const incident = new caver.klay.Contract(incidents.abi, null, { data: incidents.bytecode });
-
 const expo = new Expo();
 
 async function checkAlarmResult(tickets) {
