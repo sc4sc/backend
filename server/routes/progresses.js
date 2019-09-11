@@ -1,5 +1,4 @@
 const models = require('../models');
-const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.writeProgress =  async function(req, res) {
@@ -14,7 +13,6 @@ exports.writeProgress =  async function(req, res) {
         res.status(400).send(new Error('[writeProgress] DB create FAIL'));
     });
 
-    jobQueue.addJobProgress(incidentId, JSON.stringify(req.body));
 };
 
 exports.progressList = function(req, res) {

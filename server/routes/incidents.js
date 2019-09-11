@@ -1,6 +1,5 @@
 const models = require('../models');
 const expo = require('./push');
-const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.report =  async function(req, res) {
@@ -17,7 +16,6 @@ exports.report =  async function(req, res) {
         var user = await models.Users.findByPk(req.user.id);
         var userName = user['displayname'];
         
-        jobQueue.addJobIncident(JSON.stringify({user: userName, content: req.body}), newIncident['id']);
     } catch (e) {
         res.status(400).send(new Error("[report] FAIL"));
     }
@@ -57,7 +55,6 @@ exports.changeState = async function(req, res) {
         res.status(400).send(new Error('[changeState] DB update FAIL'));
     });    
 
-    jobQueue.addJobState(incidentId, newState);
 }
 
 exports.incidentList = async function(req, res) {

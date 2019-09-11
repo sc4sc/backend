@@ -1,5 +1,4 @@
 const models = require('../models');
-const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
@@ -21,7 +20,6 @@ exports.writeComment = async function(req, res) {
 
         var user = await models.Users.findByPk(req.user.id);
         var userName = user['displayname'];
-        jobQueue.addJobComment(incidentId, JSON.stringify ({ user: userName, content: req.body['content']}));
     } catch (e) {
         res.status(400).send(new Error('[WriteComment] FAIL'));
     }
@@ -105,7 +103,6 @@ exports.writeReply = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[WriteReply] DB findByPk FAIL"));
     }
-    jobQueue.addJobReply(comment['incidentId'], comment['commentIndex'], JSON.stringify(req.body));
 };
 
 exports.like = async function(req, res) {
@@ -126,7 +123,6 @@ exports.like = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[like] DB findByPk FAIL"));
     }
-    jobQueue.addJobLike(comment['IncidentId'], comment['commentIndex']);
 };
 
 exports.unlike = async function(req, res) {
@@ -146,7 +142,6 @@ exports.unlike = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[unlike] DB findByPk FAIL"));
     }    
-    jobQueue.addJobUnlike(comment['IncidentId'], comment['commentIndex']);
 };
 
 function getLikeInfo(UserId, comments) {

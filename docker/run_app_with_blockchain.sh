@@ -1,1 +1,0 @@
-node ../backend/server/app.js
