@@ -3,9 +3,6 @@ module.exports = function(sequelize, DataTypes) {
       type: {
         type: DataTypes.STRING, 
         allowNull: false},
-      contract: {
-        type: DataTypes.TEXT, 
-        allowNull: true},
       lat: {
         type: DataTypes.TEXT, 
         allowNull:false},
@@ -14,7 +11,10 @@ module.exports = function(sequelize, DataTypes) {
         allowNull:false},
       state: {
         type: DataTypes.TEXT,
-        allowNull: true, defaultValue: "확인중"}
+        allowNull: true, defaultValue: "확인중"},
+      isTraining: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false, defaultValue: false }
     }, {
       classMethods: {},
       tableName: 'Incidents',

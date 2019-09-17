@@ -11,10 +11,14 @@ exports.report =  async function(req, res) {
     try {
         var newIncident = await models.Incidents.create(
             {type: type, UserId: req.user.id, lat: lat, lng: lng});
+        
+        if (req.body['isTraining']) {
+            newIncident = await models.Incidents.update(
+                {isTraining: req.body['isTraining']},
+                {where: {id: req.params.id}}
+            )
+        }
         res.json(newIncident);
-
-        var user = await models.Users.findByPk(req.user.id);
-        var userName = user['displayname'];
         
     } catch (e) {
         res.status(400).send(new Error("[report] FAIL"));
