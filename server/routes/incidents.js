@@ -18,11 +18,14 @@ exports.report =  async function(req, res) {
         res.status(400).send(new Error("[report] FAIL"));
     }
 
+    var user = await models.Users.findByPk(req.user.id);
+
     models.Users.findAll({
         where: {
             id: {
                 [Op.ne]: req.user.id 
-            }
+            },
+            isTraining: user['isTraining']
         },
         attributes: ['expotoken']
     })
@@ -32,7 +35,8 @@ exports.report =  async function(req, res) {
         for(var i in expoTokenList){
             pushTokenList[i] = expoTokenList[i]['expotoken'];
         }
-        expo.push(type, building, pushTokenList);
+
+        expo.push(user['isTraining'] ? "[훈련중]":"[긴급]", type, building, pushTokenList);
     })
     .catch(() => {
         res.status(400).send(new Error('[report] DB findAll FAIL'));
