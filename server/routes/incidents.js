@@ -10,14 +10,8 @@ exports.report =  async function(req, res) {
 
     try {
         var newIncident = await models.Incidents.create(
-            {type: type, UserId: req.user.id, lat: lat, lng: lng});
+            {type: type, UserId: req.user.id, lat: lat, lng: lng, isTraining: req.body['isTraining'] ? req.body['isTraining'] : false});
         
-        if (req.body['isTraining']) {
-            newIncident = await models.Incidents.update(
-                {isTraining: req.body['isTraining']},
-                {where: {id: req.params.id}}
-            )
-        }
         res.json(newIncident);
         
     } catch (e) {
@@ -137,35 +131,8 @@ exports.readIncident = function(req, res) {
 
 exports.delete =  async function(req, res) {
     try {      
-        var incidentId = req.params.id;
-
-        var comments = await models.Comments.findAll({
-            where: { IncidentId: incidentId}});
-
-        var progresses = await models.Progresses.findAll({
-            where: { IncidentId: incidentId}});
-
-        if (comments.length) {
-            var commentList = JSON.parse(JSON.stringify(comments));
-            for(var i in commentList) {
-                await models.Likes.destroy({
-                    where: {CommentId: commentList[i]['id']},
-                });
-            };
-            
-            await models.Comments.destroy({
-                where: {IncidentId: incidentId},
-            });
-        }
-
-        if (progresses.length) {
-            await models.Progresses.destroy({
-                where: {IncidentId:incidentId}
-            });
-        }
-
         var deleteIncident = await models.Incidents.destroy({
-            where: {id: incidentId},
+            where: {id: req.params.id}
         });
 
         res.json(deleteIncident);
