@@ -31,6 +31,7 @@ router.get('/incidents/:id/progresses', route_progress.progressList);
 //user
 router.post('/logout', route_user.logout);
 router.get('/profile', route_user.profile);
+router.post('/modechange', route_user.mode);
 router.post('/updatePushToken', route_user.updatePushToken);
 
 

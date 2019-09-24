@@ -65,6 +65,19 @@ exports.profile = function(req, res) {
     });
 };
 
+exports.mode = function(req, res) {
+    models.Users.update({
+        isTraining: req.body['isTraining']},
+        {where: {id: req.user.id}}
+    )
+    .then((result) => {
+        res.json(result);
+    })
+    .catch((e) => {
+        res.status(400).send(new Error('[mode] DB update Fail'));
+    });
+};
+
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
 passport.use(new BearerStrategy(
     async (token, done) => {

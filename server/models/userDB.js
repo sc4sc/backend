@@ -21,6 +21,9 @@ module.exports = function(sequelize, DataTypes) {
       isAdmin: {
         type: DataTypes.BOOLEAN,
         allowNull: true, defaultValue: false},
+      isTraining: {
+        type: DataTypes.BOOLEAN, 
+        defaultValue: false },
     }, {
       classMethods: {},
       tableName: 'Users',
