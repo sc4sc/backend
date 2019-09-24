@@ -65,7 +65,7 @@ exports.push = function(title, type, building, pushTokenList) {
             sound: 'default',
             priority: "high",
             title: title,
-            body: building+" 에서 "+type+" 발생",
+            body: building+"에서 "+type+" 발생",
         });
     };
 
