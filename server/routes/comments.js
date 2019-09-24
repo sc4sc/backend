@@ -31,51 +31,25 @@ exports.commentList = async function(req, res) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
-    var before = req.query.before;
-    var after = req.query.after;
-    var comments;
+    var before = req.query.before || "9999-12-31 12:04:43.931+00";
+    var after = req.query.after || "1971-02-16 12:04:43.931+00";
+
     try {
-        if (before) {
-            comments = await models.Comments.findAll({
-                where: {
-                    IncidentId: incidentId,
-                    updatedAt: {
-                        [Op.lt]: before 
-                    }
-                },
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users},
-                ],
-            });
-        } else if (after) {
-            comments = await models.Comments.findAll({
-                where: {
-                    IncidentId: incidentId,
-                    updatedAt: {
-                        [Op.gt]: after 
-                    }
-                },
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users}
-                ],
-            });
-        } else {
-            comments = await models.Comments.findAll({
-                where: {IncidentId: incidentId},
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users}
-                ],
-            });
-        }
+        const comments = await models.Comments.findAll({
+            where: {
+                IncidentId: incidentId,
+                updatedAt: {
+                    [Op.lt]: before,
+                    [Op.gt]: after 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size,
+            include: [
+                {model: models.Likes},
+                {model: models.Users},
+            ],
+        });
     
         const commentList = getLikeInfo(UserId, comments);
         res.json(commentList);
