@@ -10,7 +10,7 @@ exports.report =  async function(req, res) {
 
     try {
         var newIncident = await models.Incidents.create(
-            {type: type, UserId: req.user.id, lat: lat, lng: lng, isTraining: Boolean(req.body['isTraining']) ? req.body['isTraining'] : false});
+            {type: type, UserId: req.user.id, lat: lat, lng: lng, isTraining: Boolean(req.body['isTraining'])});
         
         res.json(newIncident);
         
@@ -36,7 +36,10 @@ exports.report =  async function(req, res) {
             pushTokenList[i] = expoTokenList[i]['expotoken'];
         }
 
-        expo.push(Boolean(user['isTraining']) ? "[훈련중]":"[긴급]", type, building, pushTokenList);
+        const pushTitle = Boolean(user['isTraining'])
+            ? "[훈련중]"
+            : "[긴급]";
+        expo.push(pushTitle, type, building, pushTokenList);
     })
     .catch(() => {
         res.status(400).send(new Error('[report] DB findAll FAIL'));
