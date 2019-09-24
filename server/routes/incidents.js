@@ -10,7 +10,7 @@ exports.report =  async function(req, res) {
 
     try {
         var newIncident = await models.Incidents.create(
-            {type: type, UserId: req.user.id, lat: lat, lng: lng, isTraining: req.body['isTraining'] ? req.body['isTraining'] : false});
+            {type: type, UserId: req.user.id, lat: lat, lng: lng, isTraining: Boolean(req.body['isTraining']) ? req.body['isTraining'] : false});
         
         res.json(newIncident);
         
@@ -36,7 +36,7 @@ exports.report =  async function(req, res) {
             pushTokenList[i] = expoTokenList[i]['expotoken'];
         }
 
-        expo.push(user['isTraining'] ? "[훈련중]":"[긴급]", type, building, pushTokenList);
+        expo.push(Boolean(user['isTraining']) ? "[훈련중]":"[긴급]", type, building, pushTokenList);
     })
     .catch(() => {
         res.status(400).send(new Error('[report] DB findAll FAIL'));
@@ -63,61 +63,29 @@ exports.incidentList = async function(req, res) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
-    var before = req.query.before;
-    var after = req.query.after;
+    var before = req.query.before || "9999-12-31 12:04:43.931+00";
+    var after = req.query.after || "1971-02-16 12:04:43.931+00";
+    var isTraining = Boolean(req.query.isTraining);
 
-    if (before) {
-        models.Incidents.findAll({
-            where: {
-                updatedAt: {
-                    [Op.lt]: before 
-                }
+    models.Incidents.findAll({
+        where: {
+            updatedAt: {
+                [Op.gt]: after,
+                [Op.lt]: before
             },
-            order: [[sortBy, order]],
-            limit: size,
-            include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
-                { model: models.Users } 
-            ],
-        })
-        .then((result) => {res.json(result)})
-        .catch(() => {
-            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
-        });
-        
-    } else if (after) {
-        models.Incidents.findAll({
-            where: {
-                updatedAt: {
-                    [Op.gt]: after 
-                }
-            },
-            order: [[sortBy, order]],
-            limit: size,
-            include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
-                { model: models.Users } 
-            ],
-        })
-        .then((result) => {res.json(result)})
-        .catch(() => {
-            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
-        });
-        
-    } else {
-        models.Incidents.findAll({
-            order: [[sortBy, order]],
-            limit: size,
-            include: [
-                { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
-                { model: models.Users } 
-            ],
-        })
-        .then((result) => {res.json(result)})
-        .catch(() => {
-            res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
-        });
-    }
+            isTraining: isTraining
+        },
+        order: [[sortBy, order]],
+        limit: size,
+        include: [
+            { model: models.Progresses, order: [['updatedAt','DESC']], limit: 1},
+            { model: models.Users } 
+        ],
+    })
+    .then((result) => {res.json(result)})
+    .catch(() => {
+        res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
+    });
 };
 
 exports.readIncident = function(req, res) {
