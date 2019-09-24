@@ -108,7 +108,7 @@ passport.use(new BearerStrategy(
                         
             if (info == null) return done(new Error('[passport] SSO FAIL'));
 
-            if (info.ku_kaist_org_id === '3502' && info.ku_kaist_org_id === '2187' && info.ku_kaist_org_id === '5081') {
+            if (info.ku_kaist_org_id === '3502') {
                 isAdmin = true;
             }
             const user = await models.Users.findOrCreate({
