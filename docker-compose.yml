@@ -2,6 +2,7 @@ version: "3"
 services:
   sc4sc: 
     image: sc4sc:prototype
+    build: .
     ports: 
       - "12422:8000"
     depends_on:
