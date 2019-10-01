@@ -65,15 +65,13 @@ exports.incidentList = async function(req, res) {
     var order = req.query.order || 'DESC';
     var before = req.query.before || "9999-12-31 12:04:43.931+00";
     var after = req.query.after || "1971-02-16 12:04:43.931+00";
-    var isTraining = Boolean(req.query.isTraining);
 
     models.Incidents.findAll({
         where: {
             updatedAt: {
                 [Op.gt]: after,
                 [Op.lt]: before
-            },
-            isTraining: isTraining
+            }
         },
         order: [[sortBy, order]],
         limit: size,
