@@ -2,26 +2,18 @@ version: "3"
 services:
   sc4sc: 
     image: sc4sc:prototype
+    build: .
     ports: 
       - "12422:8000"
     depends_on:
       - db
-      - redis
     environment:
       NODE_ENV: production
-      REDIS_URL: redis://redis:6379
       POSTGRES_URL: postgres://root:password@db:5432/database_production
-      ACCOUNT_BUCKET: blockchain_account
-      ACCOUNT_KEY_PATH: key
-      ACCOUNT_PASSWORD_PATH: password_test
-      BLOCKCHAIN_ON: 0
-      KLAYTN_URL: 
       # Change two keys in production
       SECRET: 123123
       PRIVKEY: temp
-    command: bash -c 'while !</dev/tcp/db/5432 || !</dev/tcp/redis/6379; do sleep 1; done; node /backend/server/app.js'
-  redis:
-    image: redis
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; node /backend/server/app.js'
   db:
     image: postgres
     environment:

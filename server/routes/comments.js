@@ -1,5 +1,4 @@
 const models = require('../models');
-const jobQueue = require('../library/jobQueue');
 const Op = models.Sequelize.Op;
 
 exports.writeComment = async function(req, res) {
@@ -21,7 +20,6 @@ exports.writeComment = async function(req, res) {
 
         var user = await models.Users.findByPk(req.user.id);
         var userName = user['displayname'];
-        jobQueue.addJobComment(incidentId, JSON.stringify ({ user: userName, content: req.body['content']}));
     } catch (e) {
         res.status(400).send(new Error('[WriteComment] FAIL'));
     }
@@ -33,51 +31,25 @@ exports.commentList = async function(req, res) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
-    var before = req.query.before;
-    var after = req.query.after;
-    var comments;
+    var before = req.query.before || "9999-12-31 12:04:43.931+00";
+    var after = req.query.after || "1971-02-16 12:04:43.931+00";
+
     try {
-        if (before) {
-            comments = await models.Comments.findAll({
-                where: {
-                    IncidentId: incidentId,
-                    updatedAt: {
-                        [Op.lt]: before 
-                    }
-                },
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users},
-                ],
-            });
-        } else if (after) {
-            comments = await models.Comments.findAll({
-                where: {
-                    IncidentId: incidentId,
-                    updatedAt: {
-                        [Op.gt]: after 
-                    }
-                },
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users}
-                ],
-            });
-        } else {
-            comments = await models.Comments.findAll({
-                where: {IncidentId: incidentId},
-                order: [[sortBy, order]],
-                limit: size,
-                include: [
-                    {model: models.Likes},
-                    {model: models.Users}
-                ],
-            });
-        }
+        const comments = await models.Comments.findAll({
+            where: {
+                IncidentId: incidentId,
+                updatedAt: {
+                    [Op.lt]: before,
+                    [Op.gt]: after 
+                }
+            },
+            order: [[sortBy, order]],
+            limit: size,
+            include: [
+                {model: models.Likes},
+                {model: models.Users},
+            ],
+        });
     
         const commentList = getLikeInfo(UserId, comments);
         res.json(commentList);
@@ -105,7 +77,6 @@ exports.writeReply = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[WriteReply] DB findByPk FAIL"));
     }
-    jobQueue.addJobReply(comment['incidentId'], comment['commentIndex'], JSON.stringify(req.body));
 };
 
 exports.like = async function(req, res) {
@@ -126,7 +97,6 @@ exports.like = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[like] DB findByPk FAIL"));
     }
-    jobQueue.addJobLike(comment['IncidentId'], comment['commentIndex']);
 };
 
 exports.unlike = async function(req, res) {
@@ -146,7 +116,6 @@ exports.unlike = async function(req, res) {
     } catch (e) {
         res.status(400).send(new Error("[unlike] DB findByPk FAIL"));
     }    
-    jobQueue.addJobUnlike(comment['IncidentId'], comment['commentIndex']);
 };
 
 function getLikeInfo(UserId, comments) {

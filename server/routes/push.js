@@ -46,7 +46,7 @@ async function checkAlarmResult(tickets) {
     })();
 }
 
-exports.push = function(title, building, pushTokenList) {
+exports.push = function(title, type, building, pushTokenList) {
 
     // Create the messages that you want to send to clents
     var messages = [];
@@ -63,8 +63,9 @@ exports.push = function(title, building, pushTokenList) {
         messages.push({
             to: pushToken,
             sound: 'default',
+            priority: "high",
             title: title,
-            body: building,
+            body: building+"에서 "+type+" 발생",
         });
     };
 

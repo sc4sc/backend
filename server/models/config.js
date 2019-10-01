@@ -1,15 +1,15 @@
 var config = {
   initAssociations: function(db) {
-    db.Incidents.hasMany(db.Comments);
-    db.Incidents.hasMany(db.Progresses);
-    db.Comments.hasMany(db.Likes);
+    db.Incidents.hasMany(db.Comments, {onDelete: 'CASCADE'});
+    db.Incidents.hasMany(db.Progresses, {onDelete: 'CASCADE'});
+    db.Comments.hasMany(db.Likes, {onDelete: 'CASCADE'});
     
-    db.Users.hasMany(db.Incidents);
-    db.Users.hasMany(db.Comments);
-    db.Users.hasMany(db.Likes);
+    db.Users.hasMany(db.Incidents, {onDelete: 'CASCADE'});
+    db.Users.hasMany(db.Comments, {onDelete: 'CASCADE'});
+    db.Users.hasMany(db.Likes, {onDelete: 'CASCADE'});
 
-    db.Incidents.belongsTo(db.Users);
-    db.Comments.belongsTo(db.Users);
+    db.Incidents.belongsTo(db.Users, {onDelete: 'CASCADE'});
+    db.Comments.belongsTo(db.Users, {onDelete: 'CASCADE'});
   }
 };
 

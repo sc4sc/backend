@@ -14,6 +14,7 @@ router.post('/incidents', route_incident.report);
 router.post('/incidents/:id', route_incident.changeState);
 router.get('/incidents', route_incident.incidentList);
 router.get('/incidents/:id', route_incident.readIncident);
+router.post('/incidents/:id/delete', route_incident.delete);
 
 //comment
 router.post('/incidents/:id/comments', route_comment.writeComment);
@@ -30,6 +31,7 @@ router.get('/incidents/:id/progresses', route_progress.progressList);
 //user
 router.post('/logout', route_user.logout);
 router.get('/profile', route_user.profile);
+router.post('/modechange', route_user.mode);
 router.post('/updatePushToken', route_user.updatePushToken);
 
 

@@ -9,22 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/storage": "^3.0.4",
-    "bull": "^3.6.0",
-    "caver-js": "0.0.2-f",
     "dotenv": "^6.2.0",
-    "elasticsearch": "^15.3.1",
     "expo-server-sdk": "^3.1.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.4.0",
-    "openzeppelin-solidity": "^2.0.0",
     "passport": "^0.4.0",
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "^4.0.0",
     "pg": "^7.8.0",
     "sequelize": "^4.42.0",
-    "soap": "^0.26.0",
-    "supervisor": "^0.12.0",
-    "truffle": "^5.0.1"
+    "soap": "^0.26.0"
   }
 }
