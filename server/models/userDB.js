@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false},
       mobile: {
         type: DataTypes.STRING, 
-        allowNull: false},
+        allowNull: true},
       expotoken: {
         type: DataTypes.STRING, 
         allowNull: true, unique: true},
