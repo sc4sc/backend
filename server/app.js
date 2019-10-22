@@ -11,19 +11,7 @@ const port = process.env.PORT || 8000;
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-const rootRouter = express.Router();
-
-rootRouter.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
-
-const healthRoute = (req, res) => {
-  res.send("OK!");
-};
-//health check
-rootRouter.get('/health', healthRoute);
-
-const apiRouter = require('./routes');
-rootRouter.use('/', apiRouter);
-
+const rootRouter = require('./routes');
 app.use('/api', rootRouter);
 app.use('/', rootRouter);
 

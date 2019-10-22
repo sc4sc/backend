@@ -34,5 +34,16 @@ privateRouter.get('/profile', route_user.profile);
 privateRouter.post('/modechange', route_user.mode);
 privateRouter.post('/updatePushToken', route_user.updatePushToken);
 
+const rootRouter = express.Router();
 
-module.exports = privateRouter;
+rootRouter.post('/authenticate', passport.authenticate('bearer', { session: false }), route_user.login);
+
+const healthRoute = (req, res) => {
+    res.send("OK!");
+};
+
+rootRouter.get('/health', healthRoute);
+
+rootRouter.use('/', privateRouter);
+
+module.exports = rootRouter;
