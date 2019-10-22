@@ -117,7 +117,7 @@ passport.use(new BearerStrategy(
                     displayname: info.displayname, 
                     ku_kname: info.ku_kname,
                     ku_departmentcode: info.ku_departmentcode,
-                    mobile: null,
+                    mobile: info.mobile,
                     isAdmin: isAdmin,
                 }
             });
