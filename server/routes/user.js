@@ -111,22 +111,15 @@ passport.use(new BearerStrategy(
                 isAdmin = true;
             }
 
-            const user = await models.Users.findOrCreate({
-                where: {kaist_uid: info.kaist_uid}, 
-                defaults: {
-                    displayname: info.displayname, 
-                    ku_kname: info.ku_kname,
-                    ku_departmentcode: info.ku_departmentcode,
-                    mobile: info.mobile,
-                    isAdmin: isAdmin,
-                }
-            });
-
-            if (user[0]['ku_departmentcode'] == null) {
-                const update = await models.Users.update(
-                    {ku_departmentcode: info.ku_departmentcode},
-                    {where: {id: user[0]['id']}});
-            }
+            const user = await models.Users.upsert({
+                kaist_uid: info.kaist_uid,
+                displayname: info.displayname, 
+                ku_kname: info.ku_kname,
+                ku_departmentcode: info.ku_departmentcode,
+                mobile: info.mobile,
+                isAdmin: isAdmin},
+                {returning: true}
+            );
         
             const appToken = jwt.sign(
                 { id: user[0]['id'] },
