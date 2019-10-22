@@ -22,7 +22,7 @@ exports.login = async function(req, res) {
 
         res.json({ appToken: req.user.appToken, displayname: user['displayname'],
             ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
-            ku_kaist_org_id: user['ku_kaist_org_id'], mobile: user['mobile'], isAdmin: user['isAdmin']});
+            ku_departmentcode: user['ku_departmentcode'], mobile: user['mobile'], isAdmin: user['isAdmin']});
     } catch (e) {
         res.status(400).send(new Error('[login] FAIL'));
     }
@@ -100,7 +100,6 @@ passport.use(new BearerStrategy(
             });
 
             while (retry) {
-                console.log(retry);
                 info = await verification;   
                 if (info == null) retry--;
                 else retry = 0;
@@ -108,19 +107,26 @@ passport.use(new BearerStrategy(
                         
             if (info == null) return done(new Error('[passport] SSO FAIL'));
 
-            if (info.ku_kaist_org_id === '3502') {
+            if (info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066') {
                 isAdmin = true;
             }
+
             const user = await models.Users.findOrCreate({
                 where: {kaist_uid: info.kaist_uid}, 
                 defaults: {
                     displayname: info.displayname, 
                     ku_kname: info.ku_kname,
-                    ku_kaist_org_id: info.ku_kaist_org_id,
-                    mobile: info.mobile,
+                    ku_departmentcode: info.ku_departmentcode,
+                    mobile: null,
                     isAdmin: isAdmin,
                 }
             });
+
+            if (user[0]['ku_departmentcode'] == null) {
+                const update = await models.Users.update(
+                    {ku_departmentcode: info.ku_departmentcode},
+                    {where: {id: user[0]['id']}});
+            }
         
             const appToken = jwt.sign(
                 { id: user[0]['id'] },
