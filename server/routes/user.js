@@ -9,6 +9,7 @@ const JwtStrategy = passportJwt.Strategy;
 const fromAuthHeaderWithScheme = passportJwt.ExtractJwt.fromAuthHeaderWithScheme;
 
 const models = require('../models');
+const kaistSsoService = require('../services/kaistSso');
 
 const secret = process.env.SECRET;
 const expiresIn = 0; 
@@ -94,9 +95,6 @@ exports.mode = function(req, res, next) {
 passport.use(new BearerStrategy(
     async (token, done) => {
 
-        const url = 'https://iam.kaist.ac.kr:443/iamps/services/appsingleauth?wsdl';
-        const privkey = process.env.PRIVKEY;
-        const args = {cookieValue: token, PrivateKeyStr: privkey, adminVO: {adminId: null, password: null}};
         var isAdmin = false;
         var retry = 5;
         var info = null;
@@ -104,15 +102,9 @@ passport.use(new BearerStrategy(
 
         try {
             var client = await soap.createClientAsync(url);
-            var verification = new Promise (function( resolve, reject) {
-                client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
-                    if (err) reject (err);  // PRIVATE KEY 잘못됨
-                    else resolve (result.return);  // 시간 초과 (NULL) or USER
-                });
-            });
 
             // 여러 번 시도할 필요 없다
-            info = await verification;
+            info = await kaistSsoService(token);
           
             if (info == null) return done(new Error('[passport] SSO FAIL'));
 
