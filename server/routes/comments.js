@@ -1,31 +1,28 @@
 const models = require('../models');
 const Op = models.Sequelize.Op;
+const Log = require('../utils/Log')
 
-exports.writeComment = async function(req, res) {
+exports.writeComment = async function(req, res, next) {
     var incidentId = parseInt(req.params.id);
     try {
         var comments = await models.Comments.findAll ({where: {IncidentId: incidentId}});
         var commentIndex = comments.length + 1;
         
-        var result = models.Comments.create ({
+        const result = await models.Comments.create ({
             content: req.body['content'], 
             UserId: req.user.id, 
             IncidentId: incidentId,
             commentIndex: commentIndex,
         })
-        .then((result) => { res.json(result); })
-        .catch(() => {
-            res.status(400).send(new Error('[WriteComment] DB create FAIL'));
-        });
+        res.json(result);
 
-        var user = await models.Users.findByPk(req.user.id);
-        var userName = user['displayname'];
     } catch (e) {
-        res.status(400).send(new Error('[WriteComment] FAIL'));
+        Log.error(e);
+        next(new Error('[WriteComment] FAIL'));
     }
 };
 
-exports.commentList = async function(req, res) {
+exports.commentList = async function(req, res, next) {
     var incidentId = parseInt(req.params.id);
     var UserId = req.user.id;
     var size = req.query.size || 5;
@@ -54,11 +51,12 @@ exports.commentList = async function(req, res) {
         const commentList = getLikeInfo(UserId, comments);
         res.json(commentList);
     } catch (e) {
-        res.status(400).send(new Error('[commentList] DB findAll FAIL'));
+        Log.error(e);
+        next(new Error('[commentList] DB findAll FAIL'));
     }
 };
 
-exports.writeReply = async function(req, res) {
+exports.writeReply = async function(req, res, next) {
     var commentId = req.params.id;
     var UserId = req.user.id;
     var content = req.body['content'];   
@@ -68,18 +66,13 @@ exports.writeReply = async function(req, res) {
         {where: {id: commentId}}
     )
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[WriteReply] DB update FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[WriteReply] DB update FAIL'));
     });
-
-    try {
-        var comment = await models.Comments.findByPk(commentId);   
-    } catch (e) {
-        res.status(400).send(new Error("[WriteReply] DB findByPk FAIL"));
-    }
 };
 
-exports.like = async function(req, res) {
+exports.like = async function(req, res, next) {
     var commentId = parseInt(req.params.id);
     var UserId = req.user.id;
     
@@ -88,18 +81,13 @@ exports.like = async function(req, res) {
         UserId: UserId
     })
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[like] DB create FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[like] DB create FAIL'));
     });
-
-    try {
-        var comment = await models.Comments.findByPk(commentId);   
-    } catch (e) {
-        res.status(400).send(new Error("[like] DB findByPk FAIL"));
-    }
 };
 
-exports.unlike = async function(req, res) {
+exports.unlike = async function(req, res, next) {
     var commentId = parseInt(req.params.id);
     var UserId = req.user.id;
     
@@ -107,15 +95,10 @@ exports.unlike = async function(req, res) {
         where: {CommentId: commentId, UserId: UserId}
     })
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[unlike] DB destroy Fail'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[unlike] DB destroy Fail'));
     });
-
-    try {
-        var comment = await models.Comments.findByPk(commentId);   
-    } catch (e) {
-        res.status(400).send(new Error("[unlike] DB findByPk FAIL"));
-    }    
 };
 
 function getLikeInfo(UserId, comments) {

@@ -9,9 +9,9 @@ module.exports = function(sequelize, DataTypes) {
       kaist_uid: {
         type: DataTypes.STRING, 
         allowNull: false, unique: true},
-      ku_kaist_org_id: {
+      ku_departmentcode: {
         type: DataTypes.STRING, 
-        allowNull: false},
+        allowNull: true},
       mobile: {
         type: DataTypes.STRING, 
         allowNull: true},

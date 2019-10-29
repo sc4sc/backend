@@ -1,7 +1,8 @@
 const models = require('../models');
 const Op = models.Sequelize.Op;
+const Log = require('../utils/Log')
 
-exports.writeProgress =  async function(req, res) {
+exports.writeProgress =  async function(req, res, next) {
     var incidentId = parseInt(req.params.id);
 
     models.Progresses.create({
@@ -9,13 +10,14 @@ exports.writeProgress =  async function(req, res) {
         IncidentId: incidentId
     })
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[writeProgress] DB create FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[writeProgress] DB create FAIL'));
     });
 
 };
 
-exports.progressList = function(req, res) {
+exports.progressList = function(req, res, next) {
     var incidentId = parseInt(req.params.id);
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
@@ -35,49 +37,8 @@ exports.progressList = function(req, res) {
         limit: size
     })
     .then((progresses) => { res.json(progresses); })
-    .catch(() => {
-        res.status(400).send(new Error('[progressList] DB findAll FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[progressList] DB findAll FAIL'));
     });
-
-    // if (before) {
-    //     models.Progresses.findAll({
-    //         where: {
-    //             IncidentId: incidentId,
-    //             updatedAt: {
-    //                 [Op.lt]: before 
-    //             }
-    //         },
-    //         order: [[sortBy, order]],
-    //         limit: size
-    //     })
-    //     .then((progresses) => { res.json(progresses); })
-    //     .catch(() => {
-    //         res.status(400).send(new Error('[progressList] DB findAll FAIL'));
-    //     });
-    // } else if (after) {
-    //     models.Progresses.findAll({
-    //         where: {
-    //             IncidentId: incidentId,
-    //             updatedAt: {
-    //                 [Op.gt]: after 
-    //             }
-    //         },
-    //         order: [[sortBy, order]],
-    //         limit: size
-    //     })
-    //     .then((progresses) => { res.json(progresses); })
-    //     .catch(() => {
-    //         res.status(400).send(new Error('[progressList] DB findAll FAIL'));
-    //     });
-    // } else {
-    //     models.Progresses.findAll({
-    //         where: {IncidentId: incidentId},
-    //         order: [[sortBy, order]],
-    //         limit: size
-    //     })
-    //     .then((progresses) => { res.json(progresses); })
-    //     .catch(() => {
-    //         res.status(400).send(new Error('[progressList] DB findAll FAIL'));
-    //     });
-    // }
 };
