@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const passportJwt = require('passport-jwt');
 const BearerStrategy = require('passport-http-bearer').Strategy;
+const Log = require('../utils/Log');
+
 const JwtStrategy = passportJwt.Strategy;
 const fromAuthHeaderWithScheme = passportJwt.ExtractJwt.fromAuthHeaderWithScheme;
 
@@ -12,7 +14,7 @@ const secret = process.env.SECRET;
 const expiresIn = 0; 
 
 // Create jwt using existing token
-exports.login = async function(req, res) {
+exports.login = async function(req, res, next) {
     try {
         const update = await models.Users.update(
             {expotoken: req.body['expotoken']},
@@ -24,48 +26,57 @@ exports.login = async function(req, res) {
             ku_kname: user['ku_kname'], kaist_uid: user['kaist_uid'], 
             ku_departmentcode: user['ku_departmentcode'], mobile: user['mobile'], isAdmin: user['isAdmin']});
     } catch (e) {
-        res.status(400).send(new Error('[login] FAIL'));
+        Log.error(e);
+        next(new Error('[login] FAIL'));
     }
 };
 
-exports.logout = function(req, res) {
+exports.logout = function(req, res, next) {
     models.Users.update(
         {expotoken: null},
         {where: {id: req.user.id}}
     )
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[logout] DB update FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[logout] DB update FAIL'));
     });
 };
 
-exports.updatePushToken = function(req, res) {
+exports.updatePushToken = function(req, res, next) {
     models.Users.update(
         {expotoken: req.body['expotoken']},
         {where: {id: req.user.id}, returning: true})
     .then((result) => { 
-        if (result[0] ===1 )
-            res.json({"success": true});
-        else 
+        if (result[0] === 1 )
+            res.json({ "success": true });
+        else {
+            Log.info(`Failed to update id: Given ${req.user.id}`)
             res.status(400).send(new Error('[updatePushToken] DB update Fail'));
+        }
     })
-    .catch(() => {
-        res.status(400).send(new Error('[updatePushToken] DB update Fail'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[updatePushToken] DB update Fail'));
     });
 };
 
-exports.profile = function(req, res) {
+exports.profile = function(req, res, next) {
     models.Users.findByPk(req.user.id)
     .then((result) => { 
         if (result) res.json(result);
-        else res.status(400).send(new Error('[profile] DB findByPk Fail'));
+        else {
+            Log.info(`Failed to find id: Given ${req.user.id}`);
+            res.status(400).send(new Error('[profile] DB findByPk Fail'));
+        }
     })
     .catch((e)=> {
-        res.status(400).send(new Error('[profile] DB findByPk Fail'));
+        Log.error(e);
+        next(new Error('[profile] DB findByPk Fail'));
     });
 };
 
-exports.mode = function(req, res) {
+exports.mode = function(req, res, next) {
     models.Users.update({
         isTraining: req.body['isTraining']},
         {where: {id: req.user.id}}
@@ -74,7 +85,8 @@ exports.mode = function(req, res) {
         res.json(result);
     })
     .catch((e) => {
-        res.status(400).send(new Error('[mode] DB update Fail'));
+        Log.error(e);
+        next(new Error('[mode] DB update Fail'));
     });
 };
 
@@ -94,17 +106,14 @@ passport.use(new BearerStrategy(
             var client = await soap.createClientAsync(url);
             var verification = new Promise (function( resolve, reject) {
                 client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
-                    if (err) reject (result.result);
-                    else resolve (result.return);
+                    if (err) reject (err);  // PRIVATE KEY 잘못됨
+                    else resolve (result.return);  // 시간 초과 (NULL) or USER
                 });
             });
 
-            while (retry) {
-                info = await verification;   
-                if (info == null) retry--;
-                else retry = 0;
-            }
-                        
+            // 여러 번 시도할 필요 없다
+            info = await verification;
+          
             if (info == null) return done(new Error('[passport] SSO FAIL'));
 
             if (info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066') {
@@ -130,7 +139,7 @@ passport.use(new BearerStrategy(
             done(null, { appToken: appToken, id: user[0]['id']});
 
         } catch (e) {
-            console.log(e);
+            Log.error(`JWT token failure: ${e}`);
             return done(new Error("[passport] JWT token FAIL"));
         }
     }

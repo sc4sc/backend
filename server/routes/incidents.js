@@ -1,8 +1,9 @@
 const models = require('../models');
 const expo = require('./push');
 const Op = models.Sequelize.Op;
+const Log = require('../utils/Log')
 
-exports.report =  async function(req, res) {
+exports.report =  async function(req, res, next) {
     var lat = req.body['lat'];
     var lng = req.body['lng'];
     var type = req.body['type'];
@@ -15,7 +16,8 @@ exports.report =  async function(req, res) {
         res.json(newIncident);
         
     } catch (e) {
-        res.status(400).send(new Error("[report] FAIL"));
+        Log.error(e);
+        next(new Error("[report] FAIL"));
     }
 
     var user = await models.Users.findByPk(req.user.id);
@@ -41,13 +43,14 @@ exports.report =  async function(req, res) {
             : "[긴급]";
         expo.push(pushTitle, type, building, pushTokenList);
     })
-    .catch(() => {
-        res.status(400).send(new Error('[report] DB findAll FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[report] DB findAll FAIL'));
     });
 
 };
 
-exports.changeState = async function(req, res) {
+exports.changeState = async function(req, res, next) {
     var incidentId = req.params.id;
     var newState = req.body['state'];
 
@@ -56,13 +59,14 @@ exports.changeState = async function(req, res) {
         {where: {id: incidentId}}
     )
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[changeState] DB update FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[changeState] DB update FAIL'));
     });    
 
 }
 
-exports.incidentList = async function(req, res) {
+exports.incidentList = async function(req, res, next) {
     var size = req.query.size || 5;
     var sortBy = req.query.sortBy || 'updatedAt';
     var order = req.query.order || 'DESC';
@@ -83,13 +87,14 @@ exports.incidentList = async function(req, res) {
             { model: models.Users } 
         ],
     })
-    .then((result) => {res.json(result)})
-    .catch(() => {
-        res.status(400).send(new Error('[incidentList] DB findAll FAIL'));
+    .then((result) => { res.json(result); })
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[incidentList] DB findAll FAIL'));
     });
 };
 
-exports.readIncident = function(req, res) {
+exports.readIncident = function(req, res, next) {
     var incidentId = req.params.id;
 
     models.Incidents.findByPk(
@@ -97,12 +102,13 @@ exports.readIncident = function(req, res) {
         {include: [{model: models.Users}]}
     )
     .then((result) => { res.json(result); })
-    .catch(() => {
-        res.status(400).send(new Error('[readIncident] DB findByPk FAIL'));
+    .catch(e => {
+        Log.error(e);
+        next(new Error('[readIncident] DB findByPk FAIL'));
     });
 };
 
-exports.delete =  async function(req, res) {
+exports.delete =  async function(req, res, next) {
     try {      
         var deleteIncident = await models.Incidents.destroy({
             where: {id: req.params.id}
@@ -110,6 +116,7 @@ exports.delete =  async function(req, res) {
 
         res.json(deleteIncident);
     } catch (e) {
-        res.status(400).send(new Error("[delete] FAIL"));
+        Log.error(e);
+        next(new Error("[delete] FAIL"));
     }
 };
