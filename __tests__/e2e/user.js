@@ -4,7 +4,7 @@ const cwd = process.cwd();
 const src = path.join(cwd, "server");
 
 describe('involving users', () => {
-   let models = require('../server/models');
+   let models = require('../../server/models');
 
    beforeEach(async () => {
        await models.sequelize.sync({ force: true });

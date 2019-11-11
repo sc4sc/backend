@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \\\\\\\"Error: no __tests__ specified\\\\\\\" && exit 1",
+    "test:unit": "jest __tests__/unit",
     "test:all": "jest",
     "seq-cli": "npx sequelize-cli",
     "compose:bash": "docker-compose exec sc4sc bash",
     "compose:repl": "docker-compose exec sc4sc node ./server/repl.js",
-    "compose:test:all": "docker-compose exec sc4sc npm run test:all"
+    "compose:test:e2e": "docker-compose exec sc4sc npm run test:e2e"
   },
   "author": "",
   "license": "ISC",
