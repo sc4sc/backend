@@ -91,7 +91,7 @@ exports.mode = function(req, res, next) {
     });
 };
 
-const issueTokenWithSsoToken = async (token, done) => {
+const issueTokenWith = (ssoService) => async (token, done) => {
     var isAdmin = false;
     var info = null;
 
@@ -99,7 +99,7 @@ const issueTokenWithSsoToken = async (token, done) => {
     try {
 
         // 여러 번 시도할 필요 없다
-        info = await kaistSsoService(token);
+        info = await ssoService(token);
 
         if (info == null) return done(new Error('[passport] SSO FAIL'));
 
@@ -132,7 +132,7 @@ const issueTokenWithSsoToken = async (token, done) => {
 }
 
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
-passport.use(new BearerStrategy(issueTokenWithSsoToken));
+passport.use(new BearerStrategy(issueTokenWith(kaistSsoService)));
 
 // 서버에서 사용하는 토큰
 passport.use(new JwtStrategy(
