@@ -91,48 +91,42 @@ exports.mode = function(req, res, next) {
     });
 };
 
-const issueTokenWith = (ssoService) => async (token, done) => {
-    var isAdmin = false;
-    var info = null;
-
-
+const issueTokenWith = (ssoService, createUser) => async (token, done) => {
     try {
-
-        // 여러 번 시도할 필요 없다
-        info = await ssoService(token);
-
+        const info = await ssoService(token);
         if (info == null) return done(new Error('[passport] SSO FAIL'));
-
-        if (info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066') {
-            isAdmin = true;
-        }
-
-        const user = await models.Users.upsert({
-                kaist_uid: info.kaist_uid,
-                displayname: info.displayname,
-                ku_kname: info.ku_kname,
-                ku_departmentcode: info.ku_departmentcode,
-                mobile: info.mobile,
-                isAdmin: isAdmin},
-                {returning: true}
-        );
+        const user = await createUser(info);
 
         const appToken = jwt.sign(
             { id: user[0]['id'] },
             secret,
             { expiresIn }
         );
-
         done(null, { appToken: appToken, id: user[0]['id']});
-
     } catch (e) {
         Log.error(`JWT token failure: ${e}`);
         return done(new Error("[passport] JWT token FAIL"));
     }
-}
+};
+
+const createUserFromKaistUserInfo = (info) => {
+
+    const isAdmin = (info) =>
+      info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066';
+
+    return models.Users.upsert({
+          kaist_uid: info.kaist_uid,
+          displayname: info.displayname,
+          ku_kname: info.ku_kname,
+          ku_departmentcode: info.ku_departmentcode,
+          mobile: info.mobile,
+          isAdmin: isAdmin(info)},
+      {returning: true}
+    );
+};
 
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
-passport.use(new BearerStrategy(issueTokenWith(kaistSsoService)));
+passport.use(new BearerStrategy(issueTokenWith(kaistSsoService, createUserFromKaistUserInfo)));
 
 // 서버에서 사용하는 토큰
 passport.use(new JwtStrategy(
