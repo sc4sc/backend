@@ -15,7 +15,7 @@ describe('issueTokenWith', () => {
    });
 
   it('should hand over sso result to the createUser function', done => {
-    const ssoService = () => ({ department: "somewhere" })
+    const ssoService = () => ({ department: "somewhere" });
     const createUser = (result) => {
       expect(result.department).toBe("somewhere");
       return [{ id: "123" }];
@@ -32,7 +32,7 @@ describe('issueTokenWith', () => {
     const authDone = (err, response) => {
       expect(err).toBeFalsy();
       // TODO:: Verify and validate response.appToken
-      console.log("verify", jwt.verify(response.appToken, "1230"));
+      console.log("verify", jwt.verify(response.appToken, "1230", { ignoreExpiration: true }));
       done();
     };
     const createUser = () => [{ id: "123" }];
