@@ -109,6 +109,8 @@ const issueTokenWith = (ssoService, createUser) => async (token, done) => {
     }
 };
 
+exports.issueTokenWith = issueTokenWith;
+
 const createUserFromKaistUserInfo = (info) => {
 
     const isAdmin = (info) =>

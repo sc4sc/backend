@@ -1,5 +1,36 @@
-describe('s', () => {
-   it('aa', () => {
-       expect(1).toBe(1);
-   })
+const { issueTokenWith } = require("../../server/routes/user");
+const jwt = require("jsonwebtoken");
+jest.mock('../../server/utils/Log');
+
+describe('issueTokenWith', () => {
+   it('should return error when sso service return null', done => {
+     const authDone = (err, response) => {
+       expect(err).toBeInstanceOf(Error);
+       done();
+     };
+     issueTokenWith(() => null, () => {})("", authDone);
+
+   });
+
+  it('should hand over sso result to the createUser function', done => {
+    const createUser = (result) => {
+      expect(result.department).toBe("somewhere");
+      return [{ id: "123" }];
+    };
+    const authDone = (err, response) => {
+      done();
+    };
+    issueTokenWith(() => { department: "somewhere" }, createUser)("", authDone);
+  });
+
+  it('should return jwt token with id of the created record', done => {
+    const authDone = (err, response) => {
+      expect(err).toBeFalsy();
+      // TODO:: Verify and validate response.appToken
+      // console.log("verify", jwt.verify(response.appToken, "123"));
+      done();
+    };
+    const createUser = () => [{ id: "123" }];
+    issueTokenWith(() => ({}), createUser)("", authDone);
+  });
 });
