@@ -21,17 +21,13 @@ exports.report =  async function(req, res, next) {
     }
 
     var user = await models.Users.findByPk(req.user.id);
+    var condition = {where: {id: {[Op.ne]: req.user.id }}, attributes: ['expotoken']};
+    if (user['isTraining']) {
+        condition = {where: {id: {[Op.ne]: req.user.id }, isTraining: user['isTraining']}, attributes: ['expotoken']};
+    }
 
-    models.Users.findAll({
-        where: {
-            id: {
-                [Op.ne]: req.user.id 
-            },
-            isTraining: user['isTraining']
-        },
-        attributes: ['expotoken']
-    })
-    .then((tokenlist) => { 
+    try {
+        var tokenlist = await models.Users.findAll(condition);
         var expoTokenList = JSON.parse(JSON.stringify(tokenlist));
         var pushTokenList=[];
         for(var i in expoTokenList){
@@ -42,11 +38,10 @@ exports.report =  async function(req, res, next) {
             ? "[훈련중]"
             : "[긴급]";
         expo.push(pushTitle, type, building, pushTokenList);
-    })
-    .catch(e => {
+    } catch (e) {
         Log.error(e);
         next(new Error('[report] DB findAll FAIL'));
-    });
+    }
 
 };
 

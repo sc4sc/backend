@@ -23,7 +23,7 @@
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "^4.0.0",
     "pg": "^7.8.0",
-    "sequelize": "^4.42.0",
+    "sequelize": "^5.15.1",
     "sequelize-cli": "^5.5.1",
     "soap": "^0.26.0",
     "winston": "^3.2.1"
