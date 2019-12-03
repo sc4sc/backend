@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:unit": "jest __tests__/unit",
+    "test:e2e": "jest __tests__/e2e",
     "test:all": "jest",
     "seq-cli": "npx sequelize-cli",
     "compose:bash": "docker-compose exec sc4sc bash",

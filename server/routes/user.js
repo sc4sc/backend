@@ -127,6 +127,8 @@ const createUserFromKaistUserInfo = (info) => {
     );
 };
 
+exports.createUserFromKaistUserInfo = createUserFromKaistUserInfo;
+
 // SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
 passport.use(new BearerStrategy(issueTokenWith(kaistSsoService, createUserFromKaistUserInfo)));
 
