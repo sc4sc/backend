@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:unit": "jest __tests__/unit",
+    "test:all": "jest",
+    "seq-cli": "npx sequelize-cli",
+    "compose:bash": "docker-compose exec sc4sc bash",
+    "compose:repl": "docker-compose exec sc4sc node ./server/repl.js",
+    "compose:test:e2e": "docker-compose exec sc4sc npm run test:e2e"
   },
   "author": "",
   "license": "ISC",
@@ -22,5 +27,9 @@
     "sequelize-cli": "^5.5.1",
     "soap": "^0.26.0",
     "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.19",
+    "jest": "^24.9.0"
   }
 }

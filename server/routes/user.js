@@ -9,6 +9,7 @@ const JwtStrategy = passportJwt.Strategy;
 const fromAuthHeaderWithScheme = passportJwt.ExtractJwt.fromAuthHeaderWithScheme;
 
 const models = require('../models');
+const kaistSsoService = require('../services/kaistSso');
 
 const secret = process.env.SECRET;
 const expiresIn = 0; 
@@ -90,60 +91,44 @@ exports.mode = function(req, res, next) {
     });
 };
 
-// SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
-passport.use(new BearerStrategy(
-    async (token, done) => {
+const issueTokenWith = (ssoService, createUser) => async (token, done) => {
+    try {
+        const info = await ssoService(token);
+        if (info == null) return done(new Error('[passport] SSO FAIL'));
+        const user = await createUser(info);
 
-        const url = 'https://iam.kaist.ac.kr:443/iamps/services/appsingleauth?wsdl';
-        const privkey = process.env.PRIVKEY;
-        const args = {cookieValue: token, PrivateKeyStr: privkey, adminVO: {adminId: null, password: null}};
-        var isAdmin = false;
-        var retry = 5;
-        var info = null;
-
-
-        try {
-            var client = await soap.createClientAsync(url);
-            var verification = new Promise (function( resolve, reject) {
-                client.AppSinglAuthApiService.AppSinglAuthApiPort.verification(args, async function(err, result) {
-                    if (err) reject (err);  // PRIVATE KEY 잘못됨
-                    else resolve (result.return);  // 시간 초과 (NULL) or USER
-                });
-            });
-
-            // 여러 번 시도할 필요 없다
-            info = await verification;
-          
-            if (info == null) return done(new Error('[passport] SSO FAIL'));
-
-            if (info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066') {
-                isAdmin = true;
-            }
-
-            const user = await models.Users.upsert({
-                kaist_uid: info.kaist_uid,
-                displayname: info.displayname, 
-                ku_kname: info.ku_kname,
-                ku_departmentcode: info.ku_departmentcode,
-                mobile: info.mobile,
-                isAdmin: isAdmin},
-                {returning: true}
-            );
-        
-            const appToken = jwt.sign(
-                { id: user[0]['id'] },
-                secret,
-                { expiresIn }
-            );
-        
-            done(null, { appToken: appToken, id: user[0]['id']});
-
-        } catch (e) {
-            Log.error(`JWT token failure: ${e}`);
-            return done(new Error("[passport] JWT token FAIL"));
-        }
+        const appToken = jwt.sign(
+            { id: user[0]['id'] },
+            secret,
+            { expiresIn }
+        );
+        done(null, { appToken: appToken, id: user[0]['id']});
+    } catch (e) {
+        Log.error(`JWT token failure: ${e}`);
+        return done(new Error("[passport] JWT token FAIL"));
     }
-));
+};
+
+exports.issueTokenWith = issueTokenWith;
+
+const createUserFromKaistUserInfo = (info) => {
+
+    const isAdmin = (info) =>
+      info.ku_departmentcode === '729' || info.ku_departmentcode === '7065' || info.ku_departmentcode === '7066';
+
+    return models.Users.upsert({
+          kaist_uid: info.kaist_uid,
+          displayname: info.displayname,
+          ku_kname: info.ku_kname,
+          ku_departmentcode: info.ku_departmentcode,
+          mobile: info.mobile,
+          isAdmin: isAdmin(info)},
+      {returning: true}
+    );
+};
+
+// SSO 토큰을 확인하고 서버 jwt 토큰을 발급한다
+passport.use(new BearerStrategy(issueTokenWith(kaistSsoService, createUserFromKaistUserInfo)));
 
 // 서버에서 사용하는 토큰
 passport.use(new JwtStrategy(
